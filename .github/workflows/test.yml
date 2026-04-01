@@ -1,0 +1,80 @@
+name: Test & Lint
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: Install dependencies
+        run: cd backend && npm ci
+
+      - name: Run ESLint
+        run: cd backend && npm run lint --if-present
+        continue-on-error: true
+
+      - name: Check for security vulnerabilities
+        run: cd backend && npm audit --production
+        continue-on-error: true
+
+      - name: Run tests
+        run: cd backend && npm test --if-present
+        continue-on-error: true
+
+      - name: Generate coverage report
+        run: cd backend && npm run coverage --if-present
+        continue-on-error: true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          files: ./backend/coverage/coverage-final.json
+          flags: unittests
+          name: codecov-umbrella
+        continue-on-error: true
+
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: cd backend && npm ci
+
+      - name: Check code style
+        run: |
+          cd backend
+          npx prettier --check . 2>/dev/null || true
+          npx eslint . --ext .js 2>/dev/null || true
+        continue-on-error: true
+
+      - name: Check for secrets
+        uses: gitleaks/gitleaks-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true

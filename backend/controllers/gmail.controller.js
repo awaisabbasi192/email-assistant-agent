@@ -1,17 +1,26 @@
 import GmailService from '../services/gmailService.js';
+import StorageService from '../services/storageService.js';
+import LoggingService from '../services/loggingService.js';
 
 /**
  * Get Gmail OAuth authorization URL
+ * Allows both authenticated and unauthenticated users
  */
 export const getAuthUrl = async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ error: 'Not authenticated' });
+    // If user is authenticated, use their ID. Otherwise, generate a temporary one
+    let userId = req.user?.userId;
+
+    if (!userId) {
+      // Generate temporary userId for unauthenticated users
+      // Format: oauth_TIMESTAMP_RANDOM
+      const randomStr = Math.random().toString(36).substring(2, 10);
+      userId = `oauth_${Date.now()}_${randomStr}`;
     }
 
-    const { authUrl, state } = GmailService.getAuthUrl(req.user.userId);
+    const { authUrl, state } = GmailService.getAuthUrl(userId);
 
-    res.json({ authUrl });
+    res.json({ authUrl, userId });
   } catch (error) {
     console.error('Get auth URL error:', error);
     res.status(500).json({ error: 'Failed to generate authorization URL' });
@@ -20,6 +29,7 @@ export const getAuthUrl = async (req, res) => {
 
 /**
  * Handle OAuth callback
+ * Enhanced to handle users without existing sessions
  */
 export const handleCallback = async (req, res) => {
   try {
@@ -38,12 +48,54 @@ export const handleCallback = async (req, res) => {
     // Exchange code for tokens
     const tokens = await GmailService.exchangeCodeForTokens(code);
 
+    // Verify user exists, if not create a temporary one
+    const user = await StorageService.findOne('users.json', { id: userId });
+    if (!user) {
+      // Create a new user with Gmail email if signup wasn't completed
+      // This allows direct Gmail connection without traditional signup
+      const newUser = {
+        id: userId,
+        email: tokens.email,
+        passwordHash: null, // Gmail OAuth only
+        role: 'user',
+        createdAt: new Date().toISOString(),
+        gmailConnected: true,
+        loginMethod: 'gmail',
+        settings: {
+          autoGenerateReplies: false,
+          replyTone: 'professional'
+        }
+      };
+
+      await StorageService.append('users.json', newUser);
+
+      // Log activity
+      await LoggingService.logActivity(userId, 'SIGNUP_VIA_GMAIL', {
+        email: tokens.email
+      });
+    }
+
     // Store encrypted tokens
     await GmailService.storeTokens(userId, tokens);
 
-    // Redirect to dashboard with success message
+    // Generate JWT token for automatic login
+    const tokenPayload = {
+      userId: userId,
+      email: tokens.email,
+      role: user?.role || 'user'
+    };
+    const AuthService = (await import('../services/authService.js')).default;
+    const jwtToken = AuthService.generateToken(tokenPayload);
+
+    // Log activity
+    await LoggingService.logActivity(userId, 'GMAIL_CONNECT', {
+      email: tokens.email,
+      auto_created_user: !user
+    });
+
+    // Redirect to dashboard with success and auto-login token
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
-    return res.redirect(`${frontendUrl}/dashboard.html?gmail=connected`);
+    return res.redirect(`${frontendUrl}/dashboard.html?gmail=connected&token=${jwtToken}`);
   } catch (error) {
     console.error('OAuth callback error:', error);
 

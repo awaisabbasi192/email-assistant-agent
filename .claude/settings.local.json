@@ -27,7 +27,17 @@
       "Bash(__NEW_LINE_bc06d25edd3554ff__ curl -s -H \"Authorization: Bearer $TOKEN\" http://localhost:3003/api/gmail/auth-url)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: Email Assistant - Fully Functional with Gmail OAuth and Gemini AI\n\nBackend Setup:\n- Node.js + Express server on port 3005\n- Gmail OAuth2 authentication configured\n- Gemini AI API integrated for email reply generation\n- User authentication with JWT and bcrypt\n- Rate limiting and security middleware\n- All 15 API endpoints implemented and tested\n\nFrontend Setup:\n- HTML/CSS/JavaScript \\(no framework\\)\n- User signup/login pages\n- Dashboard with Gmail connection\n- Email fetching and display\n- Admin panel for monitoring\n- Responsive mobile design\n\nConfiguration:\n- Gmail OAuth credentials added \\(CLIENT_ID + CLIENT_SECRET\\)\n- Gemini API key configured\n- Environment variables properly loaded\n- CORS and security headers configured\n- All redirects working correctly\n\nCurrent Status:\n✅ User authentication working\n✅ Gmail connection via OAuth2 working\n✅ Email fetching working\n✅ Backend APIs tested and working\n⏳ AI reply generation temporarily blocked \\(Gemini quota limit\\)\n\nNote: Gemini API free tier quota exhausted - will reset in 24 hours\nor can be enabled via paid plan.\n\nReady for deployment or testing once Gemini quota is available.\n\nCo-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: Email Assistant - Fully Functional with Gmail OAuth and Gemini AI\n\nBackend Setup:\n- Node.js + Express server on port 3005\n- Gmail OAuth2 authentication configured\n- Gemini AI API integrated for email reply generation\n- User authentication with JWT and bcrypt\n- Rate limiting and security middleware\n- All 15 API endpoints implemented and tested\n\nFrontend Setup:\n- HTML/CSS/JavaScript \\(no framework\\)\n- User signup/login pages\n- Dashboard with Gmail connection\n- Email fetching and display\n- Admin panel for monitoring\n- Responsive mobile design\n\nConfiguration:\n- Gmail OAuth credentials added \\(CLIENT_ID + CLIENT_SECRET\\)\n- Gemini API key configured\n- Environment variables properly loaded\n- CORS and security headers configured\n- All redirects working correctly\n\nCurrent Status:\n✅ User authentication working\n✅ Gmail connection via OAuth2 working\n✅ Email fetching working\n✅ Backend APIs tested and working\n⏳ AI reply generation temporarily blocked \\(Gemini quota limit\\)\n\nNote: Gemini API free tier quota exhausted - will reset in 24 hours\nor can be enabled via paid plan.\n\nReady for deployment or testing once Gemini quota is available.\n\nCo-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(dir)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(node:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm start)",
+      "Bash(npm run dev:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(del \"C:\\\\Users\\\\awais\\\\OneDrive\\\\Desktop\\\\agent\\\\backend\\\\data\\\\gmail_tokens.json\")",
+      "Bash(ls \"C:\\\\Users\\\\awais\\\\OneDrive\\\\Desktop\\\\agent\\\\backend\\\\data\"\" 2>&1 || echo \"Directory or file does not exist \")"
     ]
   }
 }

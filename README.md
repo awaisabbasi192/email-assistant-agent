@@ -31,7 +31,7 @@ A professional web application that uses AI to help users generate intelligent e
 
 **Services:**
 - Gmail API (OAuth2)
-- Google Gemini AI API
+- Groq AI API (Llama models)
 - JSON file storage (no database)
 
 **Hosting:**
@@ -111,9 +111,9 @@ email-assistant/
    - Create OAuth2 credentials (Desktop app)
    - Add authorized redirect URI: `http://localhost:3000/api/gmail/callback`
 
-   **Gemini API:**
-   - Go to [Google AI Studio](https://aistudio.google.com/apikey)
-   - Create API key
+   **Groq API:**
+   - Go to [Groq Console](https://console.groq.com)
+   - Create account and generate API key
    - Copy to `.env`
 
 5. **Start using the app:**
@@ -219,8 +219,8 @@ GOOGLE_CLIENT_ID=<from-google-cloud>
 GOOGLE_CLIENT_SECRET=<from-google-cloud>
 GOOGLE_REDIRECT_URI=http://localhost:3000/api/gmail/callback
 
-# Gemini API
-GEMINI_API_KEY=<from-google-ai-studio>
+# Groq API
+GROQ_API_KEY=<from-groq-console>
 
 # Admin
 ADMIN_EMAIL=admin@yourdomain.com
@@ -298,10 +298,11 @@ node -e "console.log(require('bcryptjs').hashSync('your-password', 12))"
 - Verify Gmail API is enabled in Google Cloud
 - Check authorized redirect URI in Google Console
 
-### "Gemini API not working"
-- Verify GEMINI_API_KEY is correct
-- Check rate limits (60/min)
-- Ensure Google Generative AI API is enabled
+### "Groq API not working"
+- Verify GROQ_API_KEY is correct
+- Check rate limits (30/min for free tier)
+- Ensure your Groq account has API access enabled
+- Visit [Groq Console](https://console.groq.com) to verify
 
 ### "Cannot read emails"
 - User must have connected Gmail

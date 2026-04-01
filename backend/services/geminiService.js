@@ -1,29 +1,24 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import StorageService from './storageService.js';
 import LoggingService from './loggingService.js';
 
-const MODEL_NAME = 'gemini-pro';
-const RATE_LIMIT_PER_MINUTE = 60; // Free tier limit
-
-let genAI = null;
+const MODEL_NAME = 'llama-3.3-70b-versatile'; // Latest Llama model
+const RATE_LIMIT_PER_MINUTE = 30; // Groq free tier
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 /**
- * Initialize Gemini API
+ * Get Groq API Key
  */
-function getGenAI() {
-  if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error('GEMINI_API_KEY not set in environment variables');
-    }
-    genAI = new GoogleGenerativeAI(apiKey);
+function getGroqApiKey() {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    throw new Error('GROQ_API_KEY not set in environment variables');
   }
-  return genAI;
+  return apiKey;
 }
 
 class GeminiService {
   /**
-   * Generate email reply using Gemini AI
+   * Generate email reply using Groq AI
    */
   static async generateReply(emailData, options = {}) {
     try {
@@ -31,7 +26,7 @@ class GeminiService {
       const withinRateLimit = await this._checkRateLimit();
       if (!withinRateLimit) {
         throw new Error(
-          'Rate limit exceeded. Please try again in a moment. (60 requests per minute)'
+          'Rate limit exceeded. Please try again in a moment. (30 requests per minute)'
         );
       }
 
@@ -41,22 +36,43 @@ class GeminiService {
 
       const prompt = this._buildPrompt(subject, from, body, tone);
 
-      // Call Gemini API
-      const genai = getGenAI();
-      const model = genai.getGenerativeModel({ model: MODEL_NAME });
+      // Call Groq API
+      const apiKey = getGroqApiKey();
+      const response = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: MODEL_NAME,
+          messages: [
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          max_tokens: 1024
+        })
+      });
 
-      const result = await model.generateContent(prompt);
-      const reply = result.response.text().trim();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Groq API error: ${errorData.error?.message || 'Unknown error'}`);
+      }
+
+      const data = await response.json();
+      const reply = data.choices[0]?.message?.content || '';
 
       // Log usage
-      await LoggingService.logApiUsage('global', 'gemini', 1);
+      await LoggingService.logApiUsage('global', 'groq', 1);
 
       // Record rate limit hit
       await this._recordRequest();
 
-      return reply;
+      return reply.trim();
     } catch (error) {
-      console.error('Gemini API error:', error);
+      console.error('Groq API error:', error);
       throw new Error(`Failed to generate reply: ${error.message}`);
     }
   }
@@ -66,9 +82,6 @@ class GeminiService {
    */
   static async generateReplyOptions(emailData, count = 3) {
     try {
-      const genai = getGenAI();
-      const model = genai.getGenerativeModel({ model: MODEL_NAME });
-
       const { subject, from, body } = emailData;
 
       const prompt = `I need ${count} different professional email reply options for this email.
@@ -93,8 +106,33 @@ Option 2 (Friendly):
 Option 3 (Concise):
 [reply text]`;
 
-      const result = await model.generateContent(prompt);
-      const responses = result.response.text().trim().split('\n\n');
+      const apiKey = getGroqApiKey();
+      const response = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: MODEL_NAME,
+          messages: [
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          max_tokens: 2048
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Groq API error: ${errorData.error?.message || 'Unknown error'}`);
+      }
+
+      const data = await response.json();
+      const fullResponse = data.choices[0]?.message?.content || '';
+      const responses = fullResponse.trim().split('\n\n');
 
       // Parse responses
       const options = [];
@@ -105,11 +143,11 @@ Option 3 (Concise):
       });
 
       // Log usage
-      await LoggingService.logApiUsage('global', 'gemini', 1);
+      await LoggingService.logApiUsage('global', 'groq', 1);
 
       return options.slice(0, count);
     } catch (error) {
-      console.error('Gemini API error:', error);
+      console.error('Groq API error:', error);
       throw new Error(`Failed to generate reply options: ${error.message}`);
     }
   }
@@ -126,7 +164,7 @@ Option 3 (Concise):
       const currentMinute = new Date(now.getTime() - (now.getTime() % 60000));
 
       // Count requests in current minute
-      const recentRequests = data.globalRateLimits.geminiLastMinute.filter((ts) => {
+      const recentRequests = data.globalRateLimits.groqLastMinute.filter((ts) => {
         const requestTime = new Date(ts.timestamp);
         return requestTime >= currentMinute;
       });
@@ -146,14 +184,19 @@ Option 3 (Concise):
     try {
       const data = await StorageService.read('api_usage.json');
 
+      // Initialize if doesn't exist
+      if (!data.globalRateLimits.groqLastMinute) {
+        data.globalRateLimits.groqLastMinute = [];
+      }
+
       // Add current timestamp
-      data.globalRateLimits.geminiLastMinute.push({
+      data.globalRateLimits.groqLastMinute.push({
         timestamp: new Date().toISOString()
       });
 
       // Clean up old entries (older than 1 minute)
       const oneMinuteAgo = new Date(Date.now() - 60000);
-      data.globalRateLimits.geminiLastMinute = data.globalRateLimits.geminiLastMinute.filter(
+      data.globalRateLimits.groqLastMinute = data.globalRateLimits.groqLastMinute.filter(
         (entry) => new Date(entry.timestamp) > oneMinuteAgo
       );
 
@@ -168,18 +211,6 @@ Option 3 (Concise):
    * Build system and user prompt
    */
   static _buildPrompt(subject, from, body, tone = 'professional') {
-    const systemPrompt = `You are a professional email assistant. Your job is to generate concise, polite, and contextually appropriate email replies.
-
-Guidelines:
-- Keep replies brief (2-4 sentences for short emails, 3-6 for longer ones)
-- Match the tone of the original email
-- Address the main points
-- Use appropriate greeting (Hi/Hello/Dear)
-- Use appropriate closing (Best regards/Sincerely/Thanks)
-- Never make commitments without user approval
-- If uncertain, draft a neutral, helpful response
-- Do NOT include subject line, greeting, or signature - ONLY the body text`;
-
     const toneInstructions = {
       professional: 'Use a formal, professional tone.',
       friendly: 'Use a warm, friendly tone.',
@@ -195,7 +226,15 @@ ${body}
 
 ${toneInstructions[tone] || toneInstructions.professional}
 
-Generate a reply to this email. ONLY provide the email body text, without any greeting, signature, or subject line.`;
+Guidelines:
+- Keep replies brief (2-4 sentences for short emails, 3-6 for longer ones)
+- Match the tone of the original email
+- Address the main points
+- Use appropriate greeting (Hi/Hello/Dear)
+- Use appropriate closing (Best regards/Sincerely/Thanks)
+- Do NOT include subject line, greeting, or signature - ONLY the body text
+
+Generate a reply to this email.`;
 
     return userPrompt;
   }
