@@ -1,0 +1,40 @@
+{
+  "users": [
+    {
+      "id": "user_1774887071696",
+      "email": "test@example.com",
+      "passwordHash": "$2a$12$ng6mWetMc0l/.D5g7BkRVuuUhBCeb.WRnuaF5/IABdaeuMeaWJsXe",
+      "role": "user",
+      "createdAt": "2026-03-30T16:11:11.696Z",
+      "gmailConnected": false,
+      "settings": {
+        "replyTone": "professional",
+        "autoGenerateReplies": true
+      }
+    },
+    {
+      "id": "user_1774986923990",
+      "email": "fresh@test.com",
+      "passwordHash": "$2a$12$DdgEYlpM46GbpYMWZBU4vedyWdTt.l4YHHcTWArS8xOpMXYIzP9Ie",
+      "role": "user",
+      "createdAt": "2026-03-31T19:55:23.990Z",
+      "gmailConnected": true,
+      "settings": {
+        "autoGenerateReplies": false,
+        "replyTone": "professional"
+      }
+    },
+    {
+      "id": "user_1775019460523",
+      "email": "Awaisabbaxi08@gmail.com",
+      "passwordHash": "$2a$12$EY/juYDRT7qdPLijxrVv7ePpsNX0rmPQHnWNHOShGJ1/qVE38wL4m",
+      "role": "admin",
+      "createdAt": "2026-04-01T04:57:40.523Z",
+      "gmailConnected": true,
+      "settings": {
+        "autoGenerateReplies": false,
+        "replyTone": "professional"
+      }
+    }
+  ]
+}

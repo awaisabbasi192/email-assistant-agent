@@ -6,7 +6,7 @@
 // Determine API URL based on environment
 const API_URL = (() => {
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    return 'http://localhost:3005/api';
+    return 'http://localhost:3000/api';
   }
   // For production, use Railway backend
   return window.API_URL || 'https://email-assistant-agent-production.up.railway.app/api';
