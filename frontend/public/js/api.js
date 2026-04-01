@@ -3,13 +3,8 @@
  * Handles all HTTP requests to the backend
  */
 
-// API_URL is set by config.js before this file loads
-// If config.js is not loaded, define it here as fallback
-if (typeof API_URL === 'undefined') {
-  window.API_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:3000/api'
-    : 'https://email-assistant-agent-production.up.railway.app/api';
-}
+// API_URL is set by config.js - just use it
+// No need to redefine here
 
 /**
  * Make API call with automatic token handling

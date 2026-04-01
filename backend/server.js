@@ -48,7 +48,10 @@ const corsOptions = {
       'https://email-assistant-agent-8ueg-awais-madnis-projects.vercel.app'
     ];
 
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow if exact match OR if it's a Vercel preview domain
+    const isVercelDomain = origin && origin.includes('email-assistant-agent') && origin.includes('vercel.app');
+
+    if (!origin || allowedOrigins.includes(origin) || isVercelDomain) {
       callback(null, true);
     } else {
       callback(new Error('CORS not allowed'));

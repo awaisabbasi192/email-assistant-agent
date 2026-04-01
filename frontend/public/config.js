@@ -1,26 +1,10 @@
 // Global API Configuration
-// This file configures the backend API URL based on environment
+// Backend URL - update this to change where API calls go
 
-window.API_CONFIG = {
-  // Determine backend URL based on frontend origin
-  getBackendUrl: function() {
-    if (window.location.hostname === 'localhost') {
-      // Local development
-      return 'http://localhost:3000';
-    }
+// TEMPORARY: Use localhost backend for testing
+// Change this to your production backend URL
+const BACKEND_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : 'https://email-assistant-agent-production.up.railway.app';
 
-    // Production - use the new Vercel-deployed backend
-    // For now, Railway backend - but can be updated to any URL
-    return 'https://email-assistant-agent-production.up.railway.app';
-  },
-
-  // Get full API endpoint
-  getApiUrl: function() {
-    return this.getBackendUrl() + '/api';
-  }
-};
-
-// Set API_URL globally for backward compatibility
-if (typeof API_URL === 'undefined') {
-  var API_URL = window.API_CONFIG.getApiUrl();
-}
+const API_URL = BACKEND_URL + '/api';
