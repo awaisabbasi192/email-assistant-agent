@@ -33,6 +33,9 @@ console.log('Environment:', {
 // Security middleware
 app.use(helmet());
 
+// Trust proxy - required for rate limiting behind proxies (Railway)
+app.set('trust proxy', 1);
+
 // CORS configuration
 const corsOptions = {
   origin: process.env.FRONTEND_URL || '*',

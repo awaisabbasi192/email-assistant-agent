@@ -19,6 +19,10 @@ function getOAuth2Client() {
   const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
 
   if (!CLIENT_ID || !CLIENT_SECRET || !REDIRECT_URI) {
+    console.error('❌ Gmail OAuth Configuration Missing:');
+    console.error('   GOOGLE_CLIENT_ID:', CLIENT_ID ? '✅ SET' : '❌ NOT SET');
+    console.error('   GOOGLE_CLIENT_SECRET:', CLIENT_SECRET ? '✅ SET' : '❌ NOT SET');
+    console.error('   GOOGLE_REDIRECT_URI:', REDIRECT_URI ? '✅ SET' : '❌ NOT SET');
     throw new Error('Gmail OAuth credentials not configured in environment variables');
   }
 
