@@ -16,7 +16,15 @@ const SCOPES = [
 function getOAuth2Client() {
   const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
   const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-  const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
+
+  // Use environment-based redirect URI
+  let REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
+
+  // For local development, override with localhost
+  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
+    REDIRECT_URI = 'http://localhost:3000/api/gmail/callback';
+    console.log('ℹ️  Using local redirect URI:', REDIRECT_URI);
+  }
 
   if (!CLIENT_ID || !CLIENT_SECRET || !REDIRECT_URI) {
     console.error('❌ Gmail OAuth Configuration Missing:');

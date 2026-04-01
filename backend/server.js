@@ -38,7 +38,20 @@ app.set('trust proxy', 1);
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*',
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      'http://localhost:3001',
+      'http://127.0.0.1:3001',
+      'http://localhost:3000'
+    ];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };

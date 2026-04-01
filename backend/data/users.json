@@ -35,6 +35,20 @@
         "autoGenerateReplies": false,
         "replyTone": "professional"
       }
+    },
+    {
+      "id": "user_1775062879864",
+      "email": "Awaisabbaxi08@gmail.com",
+      "passwordHash": "$2a$12$TjZZG6mSPzE7lFLOfSMwA.DjWQepqwBrRGSRuPBBWD8I/r/C7D4NS",
+      "role": "user",
+      "createdAt": "2026-04-01T17:01:19.864Z",
+      "gmailConnected": false,
+      "emailVerified": true,
+      "gmailApproved": true,
+      "settings": {
+        "autoGenerateReplies": false,
+        "replyTone": "professional"
+      }
     }
   ]
 }

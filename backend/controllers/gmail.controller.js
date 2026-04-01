@@ -49,7 +49,7 @@ export const handleCallback = async (req, res) => {
     const tokens = await GmailService.exchangeCodeForTokens(code);
 
     // Verify user exists, if not create a temporary one
-    const user = await StorageService.findOne('users.json', { id: userId });
+    let user = await StorageService.findOne('users.json', { id: userId });
     if (!user) {
       // Create a new user with Gmail email if signup wasn't completed
       // This allows direct Gmail connection without traditional signup
@@ -68,11 +68,16 @@ export const handleCallback = async (req, res) => {
       };
 
       await StorageService.append('users.json', newUser);
+      user = newUser;
 
       // Log activity
       await LoggingService.logActivity(userId, 'SIGNUP_VIA_GMAIL', {
         email: tokens.email
       });
+    } else {
+      // Update existing user to mark Gmail as connected
+      await StorageService.update('users.json', { id: userId }, { gmailConnected: true });
+      user.gmailConnected = true;
     }
 
     // Store encrypted tokens
@@ -82,10 +87,13 @@ export const handleCallback = async (req, res) => {
     const tokenPayload = {
       userId: userId,
       email: tokens.email,
-      role: user?.role || 'user'
+      role: user.role || 'user',
+      gmailConnected: true
     };
     const AuthService = (await import('../services/authService.js')).default;
     const jwtToken = AuthService.generateToken(tokenPayload);
+
+    console.log('✅ OAuth callback successful:', { userId, email: tokens.email, gmailConnected: true });
 
     // Log activity
     await LoggingService.logActivity(userId, 'GMAIL_CONNECT', {
@@ -97,7 +105,7 @@ export const handleCallback = async (req, res) => {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
     return res.redirect(`${frontendUrl}/dashboard.html?gmail=connected&token=${jwtToken}`);
   } catch (error) {
-    console.error('OAuth callback error:', error);
+    console.error('❌ OAuth callback error:', error);
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
     return res.redirect(`${frontendUrl}/dashboard.html?error=${encodeURIComponent(error.message)}`);

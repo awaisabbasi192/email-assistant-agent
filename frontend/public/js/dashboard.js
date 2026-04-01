@@ -7,6 +7,29 @@ let currentUser = null;
 
 // Initialize dashboard on page load
 document.addEventListener('DOMContentLoaded', async () => {
+  // Handle OAuth callback - capture token from URL parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenFromUrl = urlParams.get('token');
+  const gmailConnected = urlParams.get('gmail');
+
+  if (tokenFromUrl) {
+    try {
+      // Save the token from OAuth callback
+      const parts = tokenFromUrl.split('.');
+      if (parts.length === 3) {
+        const decoded = JSON.parse(atob(parts[1]));
+        saveAuthData(tokenFromUrl, decoded.email, decoded.userId, decoded.role);
+        console.log('✅ OAuth token saved:', { email: decoded.email, userId: decoded.userId });
+      }
+    } catch (error) {
+      console.error('❌ Failed to parse OAuth token:', error);
+      showError('Failed to process OAuth callback');
+    }
+
+    // Clean up URL
+    window.history.replaceState({}, document.title, 'dashboard.html');
+  }
+
   // Check authentication
   if (!isAuthenticated()) {
     window.location.href = 'login.html';
@@ -44,12 +67,19 @@ async function loadUserData() {
     document.getElementById('userAvatar').textContent = firstLetter;
 
     // Update Gmail status
-    updateGmailStatus(currentUser.gmailConnected);
+    const isGmailConnected = currentUser.gmailConnected === true;
+    updateGmailStatus(isGmailConnected);
+
+    console.log('✅ User data loaded:', {
+      email: currentUser.email,
+      gmailConnected: isGmailConnected,
+      role: currentUser.role
+    });
 
     hideLoading();
   } catch (error) {
-    console.error('Error loading user data:', error);
-    showError('Failed to load profile');
+    console.error('❌ Error loading user data:', error);
+    showError('Failed to load profile: ' + error.message);
     hideLoading();
   }
 }
@@ -459,4 +489,18 @@ function showSuccess(message) {
   setTimeout(() => {
     toast.remove();
   }, 3000);
+}
+
+/**
+ * Logout user
+ */
+async function logout() {
+  try {
+    await apiCall('/auth/logout', { method: 'POST' });
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
+
+  clearAuthData();
+  window.location.href = 'login.html';
 }

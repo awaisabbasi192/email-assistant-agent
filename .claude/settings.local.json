@@ -44,7 +44,16 @@
       "Bash(git branch:*)",
       "Bash(git remote add:*)",
       "Bash(vercel --version:*)",
-      "Bash(timeout 5 node:*)"
+      "Bash(timeout 5 node:*)",
+      "WebFetch(domain:email-assistant-agent-8ueg.vercel.app)",
+      "Bash(wmic process:*)",
+      "Bash(git reset:*)",
+      "Bash(railway login:*)",
+      "Bash(export RAILWAY_TOKEN=d3acbe96-5c26-4115-b698-6e9655e04714)",
+      "Bash(railway variable set:*)",
+      "Bash(export RAILWAY_TOKEN=ff201a85-93f3-4a8f-b4a9-d89acd13bbe8)",
+      "Bash(railway service:*)",
+      "Bash(test:*)"
     ]
   }
 }
