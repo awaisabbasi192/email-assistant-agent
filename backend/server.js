@@ -49,9 +49,6 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Rate limiting for general endpoints
-app.use('/api/', generalApiLimiter);
-
 // Initialize admin account on startup
 async function initializeAdminAccount() {
   try {
@@ -105,7 +102,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Init endpoint - manual initialization trigger
+// Init endpoint - manual initialization trigger (NO RATE LIMIT)
 app.post('/api/init', async (req, res) => {
   try {
     await initializeAdminAccount();
@@ -120,6 +117,9 @@ app.post('/api/init', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Apply rate limiting AFTER init endpoint
+app.use('/api/', generalApiLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
