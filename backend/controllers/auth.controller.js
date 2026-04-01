@@ -90,7 +90,28 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Find user
+    // HARDCODED ADMIN LOGIN (for production without persistent storage)
+    if (email === 'admin@example.com' && password === 'Admin@123') {
+      const adminUser = {
+        id: 'admin_001',
+        email: 'admin@example.com',
+        role: 'admin',
+        gmailConnected: false
+      };
+
+      const tokenPayload = AuthService.createTokenPayload(adminUser);
+      const token = AuthService.generateToken(tokenPayload);
+
+      console.log('✅ Admin login successful');
+
+      return res.json({
+        message: 'Logged in successfully',
+        token,
+        user: adminUser
+      });
+    }
+
+    // Find user in database
     const user = await StorageService.findOne('users.json', { email });
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
