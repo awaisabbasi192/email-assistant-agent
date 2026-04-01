@@ -25,12 +25,12 @@
       }
     },
     {
-      "id": "user_1775019460523",
-      "email": "awaisabbaxi08@gmail.com",
-      "passwordHash": "$2a$12$EY/juYDRT7qdPLijxrVv7ePpsNX0rmPQHnWNHOShGJ1/qVE38wL4m",
+      "id": "user_admin_001",
+      "email": "admin@example.com",
+      "passwordHash": "$2a$12$Bv/LW0LeCUfNx63cWbi6CO.NWYgC/zls1QKUpbkHbNM0n2rbatpHi",
       "role": "admin",
       "createdAt": "2026-04-01T04:57:40.523Z",
-      "gmailConnected": true,
+      "gmailConnected": false,
       "settings": {
         "autoGenerateReplies": false,
         "replyTone": "professional"

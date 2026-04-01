@@ -217,13 +217,13 @@ export const logout = async (req, res) => {
  */
 export const setupAdmin = async (req, res) => {
   try {
-    const adminEmail = 'awaisabbaxi08@gmail.com';
-    const adminPassword = 'P0wer#92';
+    const adminEmail = 'admin@example.com';
+    const adminPassword = 'Admin@123';
 
     // Check if admin already exists
     const existingAdmin = await StorageService.findOne('users.json', { email: adminEmail });
     if (existingAdmin) {
-      return res.status(400).json({ message: 'Admin account already exists' });
+      return res.status(400).json({ message: 'Admin account already exists', email: adminEmail, password: adminPassword });
     }
 
     // Hash password

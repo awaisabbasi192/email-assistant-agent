@@ -59,8 +59,8 @@ async function initializeAdminAccount() {
     const adminExists = data.users.some(u => u.role === 'admin');
 
     if (!adminExists) {
-      const adminEmail = 'awaisabbaxi08@gmail.com';
-      const adminPassword = 'P0wer#92';
+      const adminEmail = 'admin@example.com';
+      const adminPassword = 'Admin@123';
       const passwordHash = await AuthService.hashPassword(adminPassword);
 
       const adminUser = {
