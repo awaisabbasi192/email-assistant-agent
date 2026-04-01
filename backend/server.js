@@ -31,6 +31,9 @@ console.log('Environment:', {
   PORT: PORT
 });
 
+// Trust proxy (for Railway and other reverse proxies)
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 
