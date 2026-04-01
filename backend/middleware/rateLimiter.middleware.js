@@ -13,6 +13,9 @@ export const authLimiter = rateLimit({
   trustProxy: true,
   skip: (req, res) => {
     return req.method === 'OPTIONS';
+  },
+  validate: {
+    xForwardedForHeader: false
   }
 });
 
@@ -26,7 +29,10 @@ export const generalApiLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
-  trustProxy: true
+  trustProxy: true,
+  validate: {
+    xForwardedForHeader: false
+  }
 });
 
 /**
@@ -41,7 +47,10 @@ export const userApiLimiter = rateLimit({
   message: 'Rate limit exceeded, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
-  trustProxy: true
+  trustProxy: true,
+  validate: {
+    xForwardedForHeader: false
+  }
 });
 
 /**
@@ -56,6 +65,9 @@ export const adminLimiter = rateLimit({
   trustProxy: true,
   keyGenerator: (req, res) => {
     return req.user ? req.user.userId : req.ip;
+  },
+  validate: {
+    xForwardedForHeader: false
   }
 });
 
@@ -71,5 +83,8 @@ export const sensitiveOperationLimiter = rateLimit({
   trustProxy: true,
   skip: (req, res) => {
     return req.method === 'OPTIONS';
+  },
+  validate: {
+    xForwardedForHeader: false
   }
 });
