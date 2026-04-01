@@ -42,6 +42,20 @@
       "passwordHash": "$2a$12$TjZZG6mSPzE7lFLOfSMwA.DjWQepqwBrRGSRuPBBWD8I/r/C7D4NS",
       "role": "user",
       "createdAt": "2026-04-01T17:01:19.864Z",
+      "gmailConnected": true,
+      "emailVerified": true,
+      "gmailApproved": true,
+      "settings": {
+        "autoGenerateReplies": false,
+        "replyTone": "professional"
+      }
+    },
+    {
+      "id": "user_1775063268488",
+      "email": "awaisabbaxi49@gmail.com",
+      "passwordHash": "$2a$12$dtBEsQvSnt1uJvq6x3sPgutPqZSgkLcZZYVJJEFK.0Ce/e7Ea3lle",
+      "role": "user",
+      "createdAt": "2026-04-01T17:07:48.488Z",
       "gmailConnected": false,
       "emailVerified": true,
       "gmailApproved": true,

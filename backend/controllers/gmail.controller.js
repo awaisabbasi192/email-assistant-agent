@@ -94,6 +94,7 @@ export const handleCallback = async (req, res) => {
     const jwtToken = AuthService.generateToken(tokenPayload);
 
     console.log('✅ OAuth callback successful:', { userId, email: tokens.email, gmailConnected: true });
+    console.log('🔐 JWT Token generated:', jwtToken.substring(0, 50) + '...');
 
     // Log activity
     await LoggingService.logActivity(userId, 'GMAIL_CONNECT', {
@@ -103,7 +104,9 @@ export const handleCallback = async (req, res) => {
 
     // Redirect to dashboard with success and auto-login token
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
-    return res.redirect(`${frontendUrl}/dashboard.html?gmail=connected&token=${jwtToken}`);
+    const redirectUrl = `${frontendUrl}/dashboard.html?gmail=connected&token=${jwtToken}`;
+    console.log('🔄 Redirecting to:', redirectUrl.substring(0, 100) + '...');
+    return res.redirect(redirectUrl);
   } catch (error) {
     console.error('❌ OAuth callback error:', error);
 

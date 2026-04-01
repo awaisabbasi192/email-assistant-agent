@@ -16,14 +16,11 @@ const SCOPES = [
 function getOAuth2Client() {
   const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
   const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-
-  // Use environment-based redirect URI
   let REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
 
-  // For local development, override with localhost
-  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
+  // For local development, use localhost
+  if (process.env.NODE_ENV !== 'production') {
     REDIRECT_URI = 'http://localhost:3000/api/gmail/callback';
-    console.log('ℹ️  Using local redirect URI:', REDIRECT_URI);
   }
 
   if (!CLIENT_ID || !CLIENT_SECRET || !REDIRECT_URI) {
@@ -33,6 +30,10 @@ function getOAuth2Client() {
     console.error('   GOOGLE_REDIRECT_URI:', REDIRECT_URI ? '✅ SET' : '❌ NOT SET');
     throw new Error('Gmail OAuth credentials not configured in environment variables');
   }
+
+  console.log('📍 OAuth2 Client initialized with:');
+  console.log('   CLIENT_ID:', CLIENT_ID.substring(0, 20) + '...');
+  console.log('   REDIRECT_URI:', REDIRECT_URI);
 
   return new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
 }

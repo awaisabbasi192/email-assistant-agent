@@ -7,43 +7,73 @@ let currentUser = null;
 
 // Initialize dashboard on page load
 document.addEventListener('DOMContentLoaded', async () => {
-  // Handle OAuth callback - capture token from URL parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  const tokenFromUrl = urlParams.get('token');
-  const gmailConnected = urlParams.get('gmail');
+  try {
+    console.log('🔍 Dashboard initializing...');
+    console.log('📍 URL:', window.location.href);
 
-  if (tokenFromUrl) {
-    try {
-      // Save the token from OAuth callback
-      const parts = tokenFromUrl.split('.');
-      if (parts.length === 3) {
-        const decoded = JSON.parse(atob(parts[1]));
-        saveAuthData(tokenFromUrl, decoded.email, decoded.userId, decoded.role);
-        console.log('✅ OAuth token saved:', { email: decoded.email, userId: decoded.userId });
-      }
-    } catch (error) {
-      console.error('❌ Failed to parse OAuth token:', error);
-      showError('Failed to process OAuth callback');
+    // Handle OAuth callback - capture token from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get('token');
+    const gmailConnected = urlParams.get('gmail');
+    const errorParam = urlParams.get('error');
+
+    if (errorParam) {
+      console.error('❌ OAuth Error:', errorParam);
+      showError('Gmail connection failed: ' + errorParam);
     }
 
-    // Clean up URL
-    window.history.replaceState({}, document.title, 'dashboard.html');
+    // Save token if present in URL
+    if (tokenFromUrl) {
+      try {
+        const parts = tokenFromUrl.split('.');
+        if (parts.length === 3) {
+          const decoded = JSON.parse(atob(parts[1]));
+          const userId = decoded.userId || decoded.sub;
+          const email = decoded.email;
+          const role = decoded.role || 'user';
+
+          // Save auth data
+          localStorage.setItem('authToken', tokenFromUrl);
+          localStorage.setItem('userEmail', email);
+          localStorage.setItem('userId', userId);
+          localStorage.setItem('userRole', role);
+
+          console.log('✅ OAuth token saved successfully');
+          showSuccess('Gmail connected! Loading dashboard...');
+
+          // Clean up URL to remove token
+          window.history.replaceState({}, document.title, 'dashboard.html');
+
+          // Small delay to ensure localStorage is persisted
+          await new Promise(r => setTimeout(r, 500));
+        }
+      } catch (error) {
+        console.error('❌ Failed to parse OAuth token:', error);
+        showError('OAuth processing failed: ' + error.message);
+      }
+    }
+
+    // Check authentication
+    if (!localStorage.getItem('authToken')) {
+      console.log('❌ Not authenticated - redirecting to login');
+      window.location.href = 'login.html';
+      return;
+    }
+
+    console.log('✅ User authenticated');
+
+    // Load user data
+    await loadUserData();
+
+    // Set up event listeners
+    setupEventListeners();
+
+    // Load initial data
+    await loadEmails();
+  } catch (error) {
+    console.error('❌ Dashboard initialization error:', error);
+    showError('Failed to load dashboard: ' + error.message);
   }
-
-  // Check authentication
-  if (!isAuthenticated()) {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  // Load user data
-  await loadUserData();
-
-  // Set up event listeners
-  setupEventListeners();
-
-  // Load initial data
-  await loadEmails();
 });
 
 /**
@@ -53,10 +83,17 @@ async function loadUserData() {
   try {
     showLoading('Loading profile...');
 
+    const token = localStorage.getItem('authToken');
+    console.log('🔐 Token exists:', !!token);
+
     const response = await apiCall('/auth/me');
 
+    console.log('📡 /auth/me response status:', response.status);
+
     if (!response.ok) {
-      throw new Error('Failed to load user data');
+      const errorText = await response.text();
+      console.error('❌ /auth/me error:', response.status, errorText);
+      throw new Error(`Failed to load user data (${response.status}): ${errorText}`);
     }
 
     currentUser = await response.json();
