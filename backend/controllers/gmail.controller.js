@@ -76,22 +76,32 @@ export const handleCallback = async (req, res) => {
       });
     } else {
       // Update existing user to mark Gmail as connected
+      console.log('📝 Updating user gmailConnected for:', userId);
       await StorageService.update('users.json', { id: userId }, { gmailConnected: true });
-      user.gmailConnected = true;
     }
 
     // Store encrypted tokens
+    console.log('🔐 Storing Gmail tokens for:', userId);
     await GmailService.storeTokens(userId, tokens);
 
-    // Generate JWT token for automatic login
+    // Fetch fresh user data to ensure gmailConnected is set
+    const updatedUser = await StorageService.findOne('users.json', { id: userId });
+    console.log('👤 Updated user data:', {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      gmailConnected: updatedUser.gmailConnected
+    });
+
+    // Generate JWT token for automatic login with correct gmailConnected status
     const tokenPayload = {
-      userId: userId,
-      email: tokens.email,
-      role: user.role || 'user',
-      gmailConnected: true
+      userId: updatedUser.id,
+      email: updatedUser.email,
+      role: updatedUser.role || 'user',
+      gmailConnected: updatedUser.gmailConnected === true
     };
     const AuthService = (await import('../services/authService.js')).default;
     const jwtToken = AuthService.generateToken(tokenPayload);
+    console.log('🎫 JWT Payload:', tokenPayload);
 
     console.log('✅ OAuth callback successful:', { userId, email: tokens.email, gmailConnected: true });
     console.log('🔐 JWT Token generated:', jwtToken.substring(0, 50) + '...');
