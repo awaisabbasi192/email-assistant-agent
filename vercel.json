@@ -1,11 +1,5 @@
 {
   "buildCommand": null,
   "outputDirectory": "frontend/public",
-  "installCommand": null,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
-    }
-  ]
+  "installCommand": null
 }
