@@ -25,18 +25,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Save token if present in URL
     if (tokenFromUrl) {
       try {
+        console.log('🔍 Raw token from URL:', tokenFromUrl.substring(0, 50) + '...');
+
+        // Decode and verify token structure
         const parts = tokenFromUrl.split('.');
+        console.log('📊 Token parts count:', parts.length);
+
         if (parts.length === 3) {
+          // Verify token is valid JWT
           const decoded = JSON.parse(atob(parts[1]));
-          const userId = decoded.userId || decoded.sub;
+          console.log('✅ Token decoded successfully:', decoded);
+
+          const userId = decoded.userId;
           const email = decoded.email;
           const role = decoded.role || 'user';
 
-          // Save auth data
+          if (!userId || !email) {
+            throw new Error('Token missing userId or email');
+          }
+
+          // Save auth data - EXACT token as-is
           localStorage.setItem('authToken', tokenFromUrl);
           localStorage.setItem('userEmail', email);
           localStorage.setItem('userId', userId);
           localStorage.setItem('userRole', role);
+
+          // Verify saved
+          console.log('💾 Saved to localStorage:');
+          console.log('   authToken:', localStorage.getItem('authToken').substring(0, 30) + '...');
+          console.log('   userEmail:', localStorage.getItem('userEmail'));
+          console.log('   userId:', localStorage.getItem('userId'));
 
           console.log('✅ OAuth token saved successfully');
           showSuccess('Gmail connected! Loading dashboard...');
@@ -46,9 +64,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           // Small delay to ensure localStorage is persisted
           await new Promise(r => setTimeout(r, 500));
+        } else {
+          throw new Error(`Invalid token format: ${parts.length} parts`);
         }
       } catch (error) {
         console.error('❌ Failed to parse OAuth token:', error);
+        console.error('Raw token:', tokenFromUrl);
         showError('OAuth processing failed: ' + error.message);
       }
     }
