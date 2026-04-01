@@ -168,15 +168,20 @@ export const getCurrentUser = async (req, res) => {
     let gmailConnected = user.gmailConnected === true;
     try {
       const tokenData = await StorageService.read('gmail_tokens.json');
-      const hasGmailTokens = tokenData.tokens && tokenData.tokens.some(t => t.userId === req.user.userId);
-      if (hasGmailTokens) {
-        gmailConnected = true;
-        // Update user record if needed
-        if (!user.gmailConnected) {
-          await StorageService.update('users.json', { id: req.user.userId }, { gmailConnected: true });
+      if (tokenData && tokenData.tokens && Array.isArray(tokenData.tokens)) {
+        const hasGmailTokens = tokenData.tokens.some(t => t.userId === req.user.userId);
+        if (hasGmailTokens) {
+          gmailConnected = true;
+          console.log('✅ Gmail tokens found for user:', req.user.userId);
+          // Update user record if needed
+          if (!user.gmailConnected) {
+            console.log('📝 Updating user record with gmailConnected: true');
+            await StorageService.update('users.json', { id: req.user.userId }, { gmailConnected: true });
+          }
         }
       }
     } catch (error) {
+      console.log('ℹ️  gmail_tokens.json not found or error reading:', error.message);
       // gmail_tokens.json might not exist yet, ignore
     }
 

@@ -95,7 +95,21 @@ class GmailService {
    */
   static async storeTokens(userId, tokens) {
     try {
-      const tokenData = await StorageService.read('gmail_tokens.json');
+      let tokenData = { tokens: [] };
+
+      // Try to read existing data
+      try {
+        tokenData = await StorageService.read('gmail_tokens.json');
+      } catch (error) {
+        // File doesn't exist yet, create new structure
+        console.log('📝 Creating new gmail_tokens.json file');
+        tokenData = { tokens: [] };
+      }
+
+      // Ensure tokens array exists
+      if (!tokenData.tokens) {
+        tokenData.tokens = [];
+      }
 
       // Remove existing tokens for this user
       tokenData.tokens = tokenData.tokens.filter(t => t.userId !== userId);
@@ -111,9 +125,12 @@ class GmailService {
         connectedAt: new Date().toISOString()
       });
 
+      console.log('💾 Writing Gmail tokens for user:', userId);
       await StorageService.write('gmail_tokens.json', tokenData);
+      console.log('✅ Gmail tokens stored successfully');
 
       // Update user record
+      console.log('📝 Updating user gmailConnected status');
       await StorageService.update('users.json', { id: userId }, { gmailConnected: true });
 
       // Log activity
@@ -123,6 +140,7 @@ class GmailService {
 
       return true;
     } catch (error) {
+      console.error('❌ Failed to store tokens:', error);
       throw new Error(`Failed to store tokens: ${error.message}`);
     }
   }
