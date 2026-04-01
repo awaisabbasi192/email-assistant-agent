@@ -10,6 +10,7 @@ export const authLimiter = rateLimit({
   message: 'Too many authentication attempts, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true,
   skip: (req, res) => {
     return req.method === 'OPTIONS';
   }
@@ -24,7 +25,8 @@ export const generalApiLimiter = rateLimit({
   max: 100,
   message: 'Too many requests from this IP, please try again later',
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  trustProxy: true
 });
 
 /**
@@ -38,7 +40,8 @@ export const userApiLimiter = rateLimit({
   },
   message: 'Rate limit exceeded, please try again later',
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  trustProxy: true
 });
 
 /**
@@ -50,6 +53,7 @@ export const adminLimiter = rateLimit({
   message: 'Admin rate limit exceeded',
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true,
   keyGenerator: (req, res) => {
     return req.user ? req.user.userId : req.ip;
   }
@@ -64,6 +68,7 @@ export const sensitiveOperationLimiter = rateLimit({
   message: 'Too many attempts for this sensitive operation, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true,
   skip: (req, res) => {
     return req.method === 'OPTIONS';
   }
