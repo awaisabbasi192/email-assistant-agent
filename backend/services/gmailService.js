@@ -43,8 +43,7 @@ class GmailService {
         access_type: 'offline',
         scope: SCOPES,
         state: `${userId}:${state}`,
-        prompt: 'consent', // Force consent to get refresh token
-        redirect_uri: process.env.GOOGLE_REDIRECT_URI
+        prompt: 'consent' // Force consent to get refresh token
       });
 
       return { authUrl, state };

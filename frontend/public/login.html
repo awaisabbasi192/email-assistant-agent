@@ -100,13 +100,20 @@
 
           if (response.ok) {
             const data = await response.json();
-            // Store token
+            // Store authentication data
             localStorage.setItem('authToken', data.token);
             localStorage.setItem('userEmail', data.user.email);
+            localStorage.setItem('userId', data.user.id);
+            localStorage.setItem('userRole', data.user.role);
 
             showSuccess('Login successful! Redirecting...');
             setTimeout(() => {
-              window.location.href = 'dashboard.html';
+              // Redirect to admin panel if user is admin, otherwise dashboard
+              if (data.user.role === 'admin') {
+                window.location.href = 'admin.html';
+              } else {
+                window.location.href = 'dashboard.html';
+              }
             }, 1000);
           } else {
             const error = await response.json();
