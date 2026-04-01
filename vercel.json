@@ -1,0 +1,5 @@
+{
+  "buildCommand": "echo 'Static deployment'",
+  "outputDirectory": "frontend",
+  "installCommand": "echo 'No dependencies needed'"
+}
