@@ -3,17 +3,12 @@
  * Handles all HTTP requests to the backend
  */
 
-// Use API_URL from config.js if available, otherwise set it here
-let API_URL;
-if (typeof window !== 'undefined' && window.API_CONFIG) {
-  API_URL = window.API_CONFIG.getApiUrl();
-} else {
-  // Fallback if config.js not loaded
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    API_URL = 'http://localhost:3000/api';
-  } else {
-    API_URL = 'https://email-assistant-agent-production.up.railway.app/api';
-  }
+// API_URL is set by config.js before this file loads
+// If config.js is not loaded, define it here as fallback
+if (typeof API_URL === 'undefined') {
+  window.API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000/api'
+    : 'https://email-assistant-agent-production.up.railway.app/api';
 }
 
 /**
