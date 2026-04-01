@@ -3,18 +3,17 @@
  * Handles all HTTP requests to the backend
  */
 
-// Determine API URL based on environment
-const API_URL = (() => {
+// Use API_URL from config.js if available, otherwise set it here
+let API_URL;
+if (typeof window !== 'undefined' && window.API_CONFIG) {
+  API_URL = window.API_CONFIG.getApiUrl();
+} else {
+  // Fallback if config.js not loaded
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    return 'http://localhost:3000/api';
+    API_URL = 'http://localhost:3000/api';
+  } else {
+    API_URL = 'https://email-assistant-agent-production.up.railway.app/api';
   }
-  // For production, use Railway backend
-  return window.API_URL || 'https://email-assistant-agent-production.up.railway.app/api';
-})();
-
-// Set API_URL dynamically from window if available
-if (typeof window !== 'undefined' && window.API_URL) {
-  // API_URL already set above
 }
 
 /**
