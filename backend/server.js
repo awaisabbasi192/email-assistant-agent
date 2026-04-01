@@ -16,6 +16,10 @@ import gmailRoutes from './routes/gmail.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 
+// Import services
+import StorageService from './services/storageService.js';
+import AuthService from './services/authService.js';
+
 // Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -44,6 +48,41 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Rate limiting for general endpoints
 app.use('/api/', generalApiLimiter);
+
+// Initialize admin account on startup
+async function initializeAdminAccount() {
+  try {
+    const data = await StorageService.read('users.json');
+    const adminExists = data.users.some(u => u.role === 'admin');
+
+    if (!adminExists) {
+      const adminEmail = 'awaisabbaxi08@gmail.com';
+      const adminPassword = 'P0wer#92';
+      const passwordHash = await AuthService.hashPassword(adminPassword);
+
+      const adminUser = {
+        id: `user_${Date.now()}`,
+        email: adminEmail,
+        passwordHash,
+        role: 'admin',
+        createdAt: new Date().toISOString(),
+        gmailConnected: false,
+        settings: {
+          autoGenerateReplies: false,
+          replyTone: 'professional'
+        }
+      };
+
+      await StorageService.append('users.json', adminUser);
+      console.log('✅ Admin account created:', adminEmail);
+    }
+  } catch (error) {
+    console.error('Failed to initialize admin account:', error);
+  }
+}
+
+// Initialize on startup
+await initializeAdminAccount();
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
