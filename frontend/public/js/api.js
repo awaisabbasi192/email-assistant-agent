@@ -8,8 +8,8 @@ const API_URL = (() => {
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:3005/api';
   }
-  // For production, use relative path or environment variable
-  return window.API_URL || '/api';
+  // For production, use Railway backend
+  return window.API_URL || 'https://email-assistant-agent-production.up.railway.app/api';
 })();
 
 /**
