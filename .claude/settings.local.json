@@ -53,7 +53,10 @@
       "Bash(railway variable set:*)",
       "Bash(export RAILWAY_TOKEN=ff201a85-93f3-4a8f-b4a9-d89acd13bbe8)",
       "Bash(railway service:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(npx vercel deploy:*)",
+      "Bash(railway up:*)",
+      "Bash(grep:*)"
     ]
   }
 }

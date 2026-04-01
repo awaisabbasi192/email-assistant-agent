@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "buildCommand": "echo 'Build skipped'",
+  "devCommand": "node server.js",
+  "env": {
+    "NODE_ENV": "production",
+    "JWT_SECRET": "@JWT_SECRET",
+    "ENCRYPTION_KEY": "@ENCRYPTION_KEY",
+    "GOOGLE_CLIENT_ID": "@GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET": "@GOOGLE_CLIENT_SECRET",
+    "GOOGLE_REDIRECT_URI": "@GOOGLE_REDIRECT_URI",
+    "GEMINI_API_KEY": "@GEMINI_API_KEY",
+    "ADMIN_EMAIL": "@ADMIN_EMAIL",
+    "ADMIN_PASSWORD": "@ADMIN_PASSWORD",
+    "FRONTEND_URL": "@FRONTEND_URL"
+  },
+  "functions": {
+    "server.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  }
+}
