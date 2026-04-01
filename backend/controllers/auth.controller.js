@@ -164,11 +164,33 @@ export const getCurrentUser = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Check if Gmail tokens exist to verify Gmail connection status
+    let gmailConnected = user.gmailConnected === true;
+    try {
+      const tokenData = await StorageService.read('gmail_tokens.json');
+      const hasGmailTokens = tokenData.tokens && tokenData.tokens.some(t => t.userId === req.user.userId);
+      if (hasGmailTokens) {
+        gmailConnected = true;
+        // Update user record if needed
+        if (!user.gmailConnected) {
+          await StorageService.update('users.json', { id: req.user.userId }, { gmailConnected: true });
+        }
+      }
+    } catch (error) {
+      // gmail_tokens.json might not exist yet, ignore
+    }
+
+    console.log('👤 getCurrentUser:', {
+      userId: req.user.userId,
+      email: user.email,
+      gmailConnected
+    });
+
     res.json({
       id: user.id,
       email: user.email,
       role: user.role,
-      gmailConnected: user.gmailConnected,
+      gmailConnected: gmailConnected,
       createdAt: user.createdAt,
       settings: user.settings
     });
