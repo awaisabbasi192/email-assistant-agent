@@ -220,18 +220,13 @@ export const setupAdmin = async (req, res) => {
     const adminEmail = 'admin@example.com';
     const adminPassword = 'Admin@123';
 
-    // Check if admin already exists
-    const existingAdmin = await StorageService.findOne('users.json', { email: adminEmail });
-    if (existingAdmin) {
-      return res.status(400).json({ message: 'Admin account already exists', email: adminEmail, password: adminPassword });
-    }
+    console.log('🔧 Setup endpoint called - creating/verifying admin account');
 
-    // Hash password
+    // Force create admin account
     const passwordHash = await AuthService.hashPassword(adminPassword);
 
-    // Create admin user
     const adminUser = {
-      id: `user_${Date.now()}`,
+      id: `user_admin_${Date.now()}`,
       email: adminEmail,
       passwordHash,
       role: 'admin',
@@ -243,16 +238,30 @@ export const setupAdmin = async (req, res) => {
       }
     };
 
-    // Save admin user
-    await StorageService.append('users.json', adminUser);
+    // Read current users
+    let data = await StorageService.read('users.json');
+
+    // Remove old admin if exists
+    data.users = data.users.filter(u => !(u.email === adminEmail && u.role === 'admin'));
+
+    // Add new admin
+    data.users.push(adminUser);
+
+    // Write back
+    await StorageService.write('users.json', data);
+
+    console.log('✅ Admin account setup completed');
+    console.log('   Email: ' + adminEmail);
+    console.log('   Password: ' + adminPassword);
 
     res.status(201).json({
-      message: 'Admin account created successfully',
+      message: 'Admin account created/updated successfully',
       email: adminEmail,
-      password: adminPassword
+      password: adminPassword,
+      note: 'Credentials are now active - you can login'
     });
   } catch (error) {
-    console.error('Setup admin error:', error);
-    res.status(500).json({ error: 'Failed to setup admin account' });
+    console.error('❌ Setup admin error:', error);
+    res.status(500).json({ error: 'Failed to setup admin account: ' + error.message });
   }
 };
