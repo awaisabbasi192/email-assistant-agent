@@ -12,6 +12,11 @@ const API_URL = (() => {
   return window.API_URL || 'https://email-assistant-agent-production.up.railway.app/api';
 })();
 
+// Set API_URL dynamically from window if available
+if (typeof window !== 'undefined' && window.API_URL) {
+  // API_URL already set above
+}
+
 /**
  * Make API call with automatic token handling
  */

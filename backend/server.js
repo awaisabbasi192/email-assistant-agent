@@ -43,7 +43,9 @@ const corsOptions = {
       process.env.FRONTEND_URL,
       'http://localhost:3001',
       'http://127.0.0.1:3001',
-      'http://localhost:3000'
+      'http://localhost:3000',
+      'https://email-assistant-agent-8ueg.vercel.app',
+      'https://email-assistant-agent-8ueg-awais-madnis-projects.vercel.app'
     ];
 
     if (!origin || allowedOrigins.includes(origin)) {
