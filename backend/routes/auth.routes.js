@@ -35,4 +35,10 @@ router.put('/settings', verifyToken, authController.updateSettings);
  */
 router.post('/logout', verifyToken, authController.logout);
 
+/**
+ * POST /api/auth/setup
+ * Initialize admin account (for production setup)
+ */
+router.post('/setup', authController.setupAdmin);
+
 export default router;

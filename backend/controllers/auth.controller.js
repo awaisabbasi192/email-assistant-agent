@@ -211,3 +211,48 @@ export const logout = async (req, res) => {
     res.status(500).json({ error: 'Logout failed' });
   }
 };
+
+/**
+ * Setup admin account on first deployment
+ */
+export const setupAdmin = async (req, res) => {
+  try {
+    const adminEmail = 'awaisabbaxi08@gmail.com';
+    const adminPassword = 'P0wer#92';
+
+    // Check if admin already exists
+    const existingAdmin = await StorageService.findOne('users.json', { email: adminEmail });
+    if (existingAdmin) {
+      return res.status(400).json({ message: 'Admin account already exists' });
+    }
+
+    // Hash password
+    const passwordHash = await AuthService.hashPassword(adminPassword);
+
+    // Create admin user
+    const adminUser = {
+      id: `user_${Date.now()}`,
+      email: adminEmail,
+      passwordHash,
+      role: 'admin',
+      createdAt: new Date().toISOString(),
+      gmailConnected: false,
+      settings: {
+        autoGenerateReplies: false,
+        replyTone: 'professional'
+      }
+    };
+
+    // Save admin user
+    await StorageService.append('users.json', adminUser);
+
+    res.status(201).json({
+      message: 'Admin account created successfully',
+      email: adminEmail,
+      password: adminPassword
+    });
+  } catch (error) {
+    console.error('Setup admin error:', error);
+    res.status(500).json({ error: 'Failed to setup admin account' });
+  }
+};
