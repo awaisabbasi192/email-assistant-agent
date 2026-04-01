@@ -24,15 +24,11 @@ import AuthService from './services/authService.js';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Log startup info
+console.log('🚀 Starting Email Assistant Server...');
 console.log('Environment:', {
   NODE_ENV: process.env.NODE_ENV,
-  TEST_MODE: process.env.TEST_MODE || 'disabled',
   PORT: PORT
 });
-
-// Trust proxy (for Railway and other reverse proxies)
-app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
@@ -49,21 +45,17 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Initialize admin account on startup
+// Initialize admin account function
 async function initializeAdminAccount() {
   try {
-    console.log('🔄 Initializing admin account...');
+    console.log('🔄 Checking admin account...');
     const data = await StorageService.read('users.json');
-    console.log('📊 Current users:', data.users.length);
-
-    const adminExists = data.users.some(u => u.role === 'admin');
-    console.log('👤 Admin exists:', adminExists);
+    const adminExists = data.users && data.users.some(u => u.role === 'admin');
 
     if (!adminExists) {
+      console.log('📝 Creating admin account...');
       const adminEmail = 'admin@example.com';
       const adminPassword = 'Admin@123';
-      console.log('🔐 Creating admin account:', adminEmail);
-
       const passwordHash = await AuthService.hashPassword(adminPassword);
 
       const adminUser = {
@@ -80,20 +72,21 @@ async function initializeAdminAccount() {
       };
 
       await StorageService.append('users.json', adminUser);
-      console.log('✅ Admin account created:', adminEmail);
+      console.log('✅ Admin account created successfully!');
+      console.log('   Email: admin@example.com');
+      console.log('   Password: Admin@123');
     } else {
       console.log('✅ Admin account already exists');
     }
   } catch (error) {
-    console.error('❌ Failed to initialize admin account:', error.message);
-    console.error('Stack:', error.stack);
+    console.error('❌ Error initializing admin:', error.message);
   }
 }
 
-// Initialize on startup
+// Initialize admin on startup
 await initializeAdminAccount();
 
-// Health check endpoint
+// Health check endpoint (NO RATE LIMIT)
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -102,24 +95,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Init endpoint - manual initialization trigger (NO RATE LIMIT)
-app.post('/api/init', async (req, res) => {
-  try {
-    await initializeAdminAccount();
-    res.json({
-      message: 'Initialization completed',
-      credentials: {
-        email: 'admin@example.com',
-        password: 'Admin@123'
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+// Apply rate limiting to /api/* (but NOT /api/health or /api/auth/login initially)
+app.use('/api/', (req, res, next) => {
+  // Skip rate limiting for health checks and init
+  if (req.path === '/health' || req.path === '/init') {
+    return next();
   }
+  generalApiLimiter(req, res, next);
 });
-
-// Apply rate limiting AFTER init endpoint
-app.use('/api/', generalApiLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -142,22 +125,23 @@ const server = app.listen(PORT, () => {
 ║   Environment: ${process.env.NODE_ENV || 'development'}        ║
 ╚════════════════════════════════════════╝
   `);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
+  console.log(`✅ API: http://localhost:${PORT}/api`);
+  console.log(`✅ Health: http://localhost:${PORT}/api/health`);
 });
 
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully...');
+  console.log('⚠️ SIGTERM received, shutting down gracefully...');
   server.close(() => {
-    console.log('Server closed');
+    console.log('✅ Server closed');
     process.exit(0);
   });
 });
 
 process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully...');
+  console.log('⚠️ SIGINT received, shutting down gracefully...');
   server.close(() => {
-    console.log('Server closed');
+    console.log('✅ Server closed');
     process.exit(0);
   });
 });
