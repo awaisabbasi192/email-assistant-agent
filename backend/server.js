@@ -20,6 +20,13 @@ import adminRoutes from './routes/admin.routes.js';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Log startup info
+console.log('Environment:', {
+  NODE_ENV: process.env.NODE_ENV,
+  TEST_MODE: process.env.TEST_MODE || 'disabled',
+  PORT: PORT
+});
+
 // Security middleware
 app.use(helmet());
 

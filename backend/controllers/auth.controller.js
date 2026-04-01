@@ -42,6 +42,8 @@ export const signup = async (req, res) => {
       role: 'user',
       createdAt: new Date().toISOString(),
       gmailConnected: false,
+      emailVerified: true,
+      gmailApproved: true,
       settings: {
         autoGenerateReplies: false,
         replyTone: 'professional'
