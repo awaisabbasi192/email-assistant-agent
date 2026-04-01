@@ -55,12 +55,18 @@ app.use('/api/', generalApiLimiter);
 // Initialize admin account on startup
 async function initializeAdminAccount() {
   try {
+    console.log('🔄 Initializing admin account...');
     const data = await StorageService.read('users.json');
+    console.log('📊 Current users:', data.users.length);
+
     const adminExists = data.users.some(u => u.role === 'admin');
+    console.log('👤 Admin exists:', adminExists);
 
     if (!adminExists) {
       const adminEmail = 'admin@example.com';
       const adminPassword = 'Admin@123';
+      console.log('🔐 Creating admin account:', adminEmail);
+
       const passwordHash = await AuthService.hashPassword(adminPassword);
 
       const adminUser = {
@@ -78,9 +84,12 @@ async function initializeAdminAccount() {
 
       await StorageService.append('users.json', adminUser);
       console.log('✅ Admin account created:', adminEmail);
+    } else {
+      console.log('✅ Admin account already exists');
     }
   } catch (error) {
-    console.error('Failed to initialize admin account:', error);
+    console.error('❌ Failed to initialize admin account:', error.message);
+    console.error('Stack:', error.stack);
   }
 }
 
@@ -94,6 +103,22 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
+});
+
+// Init endpoint - manual initialization trigger
+app.post('/api/init', async (req, res) => {
+  try {
+    await initializeAdminAccount();
+    res.json({
+      message: 'Initialization completed',
+      credentials: {
+        email: 'admin@example.com',
+        password: 'Admin@123'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Routes
