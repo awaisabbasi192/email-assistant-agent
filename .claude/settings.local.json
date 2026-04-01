@@ -37,7 +37,8 @@
       "Bash(npm run dev:*)",
       "Bash(npm cache clean:*)",
       "Bash(del \"C:\\\\Users\\\\awais\\\\OneDrive\\\\Desktop\\\\agent\\\\backend\\\\data\\\\gmail_tokens.json\")",
-      "Bash(ls \"C:\\\\Users\\\\awais\\\\OneDrive\\\\Desktop\\\\agent\\\\backend\\\\data\"\" 2>&1 || echo \"Directory or file does not exist \")"
+      "Bash(ls \"C:\\\\Users\\\\awais\\\\OneDrive\\\\Desktop\\\\agent\\\\backend\\\\data\"\" 2>&1 || echo \"Directory or file does not exist \")",
+      "Bash(git commit:*)"
     ]
   }
 }
