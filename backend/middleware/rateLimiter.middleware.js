@@ -10,6 +10,7 @@ export const authLimiter = rateLimit({
   message: 'Too many authentication attempts, please try again later',
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
+  trustProxy: true, // Trust proxy headers (for Railway)
   skip: (req, res) => {
     // Skip rate limiting for OPTIONS requests
     return req.method === 'OPTIONS';
@@ -25,7 +26,8 @@ export const generalApiLimiter = rateLimit({
   max: 100, // Limit each IP to 100 requests per windowMs
   message: 'Too many requests from this IP, please try again later',
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  trustProxy: true // Trust proxy headers (for Railway)
 });
 
 /**
@@ -41,7 +43,8 @@ export const userApiLimiter = rateLimit({
   },
   message: 'Rate limit exceeded, please try again later',
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  trustProxy: true // Trust proxy headers (for Railway)
 });
 
 /**
@@ -54,6 +57,7 @@ export const adminLimiter = rateLimit({
   message: 'Admin rate limit exceeded',
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true, // Trust proxy headers (for Railway)
   keyGenerator: (req, res) => {
     // Rate limit by userId for admin endpoints
     return req.user ? req.user.userId : req.ip;
@@ -70,6 +74,7 @@ export const sensitiveOperationLimiter = rateLimit({
   message: 'Too many attempts for this sensitive operation, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true, // Trust proxy headers (for Railway)
   skip: (req, res) => {
     return req.method === 'OPTIONS';
   }
