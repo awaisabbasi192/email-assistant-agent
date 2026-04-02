@@ -1,7 +1,3 @@
 {
-  "buildCommand": "echo 'Building static site'",
-  "outputDirectory": "public",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "@next_public_api_url"
-  }
+  "outputDirectory": "public"
 }
