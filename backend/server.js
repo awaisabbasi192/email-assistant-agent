@@ -107,8 +107,10 @@ async function initializeAdminAccount() {
   }
 }
 
-// Initialize admin on startup
-await initializeAdminAccount();
+// Initialize admin on startup (non-blocking)
+initializeAdminAccount().catch(err => {
+  console.warn('⚠️ Admin initialization failed, continuing startup:', err.message);
+});
 
 // Health check endpoint (NO RATE LIMIT)
 app.get('/api/health', (req, res) => {
