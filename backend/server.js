@@ -144,17 +144,8 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // Start server
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`
-╔════════════════════════════════════════╗
-║   Email Assistant Server               ║
-║   Running on port ${PORT}                  ║
-║   Environment: ${process.env.NODE_ENV || 'development'}        ║
-║   Host: 0.0.0.0 (accessible from network) ║
-╚════════════════════════════════════════╝
-  `);
-  console.log(`✅ API: http://0.0.0.0:${PORT}/api`);
-  console.log(`✅ Health: http://0.0.0.0:${PORT}/api/health`);
+app.listen(process.env.PORT || 3000, '0.0.0.0', () => {
+  console.log(`Server running on port ${process.env.PORT || 3000}`);
 });
 
 // Handle graceful shutdown
