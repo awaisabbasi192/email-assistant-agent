@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Email Assistant</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="navbar">
+        <div class="navbar-brand">✉️ Email Assistant Admin</div>
+        <div class="navbar-user">
+          <span class="user-email" id="adminEmail">admin@example.com</span>
+          <button class="btn btn-secondary btn-sm" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <h1>Admin Dashboard</h1>
+      <p class="admin-header-subtitle">Monitor system activity and manage users</p>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-grid">
+      <div class="admin-stat-card primary">
+        <div class="admin-stat-label">Total Users</div>
+        <div class="admin-stat-number" id="totalUsers">0</div>
+      </div>
+      <div class="admin-stat-card success">
+        <div class="admin-stat-label">Gmail Connected</div>
+        <div class="admin-stat-number" id="gmailConnected">0</div>
+      </div>
+      <div class="admin-stat-card warning">
+        <div class="admin-stat-label">Drafts Created</div>
+        <div class="admin-stat-number" id="draftsCreated">0</div>
+      </div>
+      <div class="admin-stat-card info">
+        <div class="admin-stat-label">Total Logins</div>
+        <div class="admin-stat-number" id="totalLogins">0</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="users">👥 Users</button>
+      <button class="admin-tab" data-tab="activity">📊 Activity</button>
+      <button class="admin-tab" data-tab="usage">📈 API Usage</button>
+      <button class="admin-tab" data-tab="settings">⚙️ Settings</button>
+    </div>
+
+    <!-- Users Tab -->
+    <div id="usersTab" class="admin-tab-content">
+      <div class="search-filter">
+        <input
+          type="text"
+          id="userSearch"
+          placeholder="Search by email..."
+          autocomplete="off"
+        >
+        <button class="btn btn-primary" id="refreshUsersBtn">🔄 Refresh</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="usersTable">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Gmail</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr>
+              <td colspan="5" style="text-align: center; color: #95a5a6;">Loading users...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="usersPagination"></div>
+    </div>
+
+    <!-- Activity Tab -->
+    <div id="activityTab" class="admin-tab-content" style="display: none;">
+      <div class="search-filter">
+        <select id="activityFilter">
+          <option value="">All Activities</option>
+          <option value="LOGIN">Login</option>
+          <option value="SIGNUP">Signup</option>
+          <option value="EMAIL_FETCH">Email Fetch</option>
+          <option value="AI_REPLY_GENERATE">Generate Reply</option>
+          <option value="DRAFT_CREATE">Create Draft</option>
+          <option value="GMAIL_CONNECT">Gmail Connect</option>
+        </select>
+        <button class="btn btn-primary" id="refreshActivityBtn">🔄 Refresh</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="activityTable">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Action</th>
+              <th>Timestamp</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="activityTableBody">
+            <tr>
+              <td colspan="4" style="text-align: center; color: #95a5a6;">Loading activity...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="activityPagination"></div>
+    </div>
+
+    <!-- API Usage Tab -->
+    <div id="usageTab" class="admin-tab-content" style="display: none;">
+      <div class="chart-container">
+        <h3 class="chart-title">API Usage Summary</h3>
+        <div class="usage-bars">
+          <div class="usage-bar-item">
+            <div class="usage-label">Gmail Calls</div>
+            <div class="usage-bar">
+              <div class="usage-fill" id="gmailUsageFill" style="width: 0%">0</div>
+            </div>
+          </div>
+          <div class="usage-bar-item">
+            <div class="usage-label">Gemini Calls</div>
+            <div class="usage-bar">
+              <div class="usage-fill" id="geminiUsageFill" style="width: 0%">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <h3>Daily API Usage</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Gmail Calls</th>
+              <th>Gemini Calls</th>
+              <th>Users</th>
+            </tr>
+          </thead>
+          <tbody id="usageTableBody">
+            <tr>
+              <td colspan="4" style="text-align: center; color: #95a5a6;">Loading usage data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settingsTab" class="admin-tab-content" style="display: none;">
+      <div class="table-wrapper">
+        <h3>System Settings</h3>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="signupEnabledToggle">
+            Allow new signups
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="maintenanceModeToggle">
+            Maintenance Mode (disable all features)
+          </label>
+        </div>
+
+        <button class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>
+
+        <hr style="margin: 2rem 0;">
+
+        <h3>Data Management</h3>
+        <p style="color: #7f8c8d; margin-bottom: 1rem;">
+          Export all system data as JSON backup
+        </p>
+        <button class="export-button" id="exportDataBtn">
+          📥 Export Data
+        </button>
+
+        <hr style="margin: 2rem 0;">
+
+        <h3>Cleanup</h3>
+        <div class="form-group">
+          <label for="clearLogsInput">Clear logs older than (days):</label>
+          <input type="number" id="clearLogsInput" value="30" min="1">
+        </div>
+        <button class="btn btn-danger" id="clearLogsBtn">🗑️ Clear Old Logs</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-message" id="loadingMessage">Loading...</div>
+  </div>
+
+  <!-- User Details Modal -->
+  <div class="admin-modal" id="userModal">
+    <div class="admin-modal-content">
+      <div class="admin-modal-header">
+        <h2>User Details</h2>
+        <button class="admin-modal-close" id="closeUserModal">&times;</button>
+      </div>
+
+      <div id="userModalBody">
+        <!-- Content loaded dynamically -->
+      </div>
+
+      <div class="admin-modal-footer">
+        <button class="btn btn-secondary" id="closeUserModalBtn">Close</button>
+        <button class="btn btn-danger" id="disableUserBtn" style="display: none;">Disable User</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

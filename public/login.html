@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Email Assistant</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">✉️</div>
+        <h1>Welcome Back</h1>
+        <p>Sign in to your Email Assistant account</p>
+      </div>
+
+      <div id="errorAlert" class="error-alert"></div>
+      <div id="successAlert" class="success-alert"></div>
+
+      <form id="loginForm">
+        <div class="form-group-auth">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="you@example.com"
+            required
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="form-group-auth">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            required
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button type="submit" class="btn-auth btn-auth-primary" id="loginBtn">
+          Sign In
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>
+          Don't have an account?
+          <a href="signup.html">Create one</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-message" id="loadingMessage">Logging in...</div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Initialize login page
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginForm = document.getElementById('loginForm');
+      const loginBtn = document.getElementById('loginBtn');
+
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        // Validation
+        if (!email || !password) {
+          showError('Please fill in all fields');
+          return;
+        }
+
+        if (!isValidEmail(email)) {
+          showError('Please enter a valid email address');
+          return;
+        }
+
+        loginBtn.disabled = true;
+        showLoading('Logging in...');
+
+        try {
+          const response = await apiCall('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            // Store authentication data
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('userEmail', data.user.email);
+            localStorage.setItem('userId', data.user.id);
+            localStorage.setItem('userRole', data.user.role);
+
+            showSuccess('Login successful! Redirecting...');
+            setTimeout(() => {
+              // Redirect to admin panel if user is admin, otherwise dashboard
+              if (data.user.role === 'admin') {
+                window.location.href = 'admin.html';
+              } else {
+                window.location.href = 'dashboard.html';
+              }
+            }, 1000);
+          } else {
+            const error = await response.json();
+            showError(error.error || 'Login failed');
+            loginBtn.disabled = false;
+          }
+        } catch (error) {
+          showError('Connection error. Please try again.');
+          loginBtn.disabled = false;
+        } finally {
+          hideLoading();
+        }
+      });
+
+      // Check if already logged in
+      if (localStorage.getItem('authToken')) {
+        window.location.href = 'dashboard.html';
+      }
+    });
+
+    function showError(message) {
+      const errorAlert = document.getElementById('errorAlert');
+      errorAlert.textContent = message;
+      errorAlert.classList.add('show');
+      setTimeout(() => {
+        errorAlert.classList.remove('show');
+      }, 5000);
+    }
+
+    function showSuccess(message) {
+      const successAlert = document.getElementById('successAlert');
+      successAlert.textContent = message;
+      successAlert.classList.add('show');
+    }
+
+    function showLoading(message) {
+      document.getElementById('loadingMessage').textContent = message;
+      document.getElementById('loadingOverlay').classList.add('active');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('active');
+    }
+  </script>
+</body>
+</html>
