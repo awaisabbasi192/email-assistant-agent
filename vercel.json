@@ -1,8 +1,20 @@
 {
   "version": 2,
-  "buildCommand": "echo 'Static site - no build needed'",
-  "installCommand": "echo 'Static site - no install needed'",
+  "buildCommand": "",
+  "installCommand": "",
   "outputDirectory": "frontend/public",
+  "public": true,
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600"
+        }
+      ]
+    }
+  ]
 }
