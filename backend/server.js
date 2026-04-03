@@ -48,7 +48,8 @@ const corsOptions = {
       'https://email-assistant-agent-8ueg.vercel.app',
       'https://email-assistant-agent-8ueg-awais-madnis-projects.vercel.app',
       'https://email-assistant-agent-git-master-awais-madnis-projects.vercel.app',
-      'https://email-assistant-agent-j58zaqbny-awais-madnis-projects.vercel.app'
+      'https://email-assistant-agent-j58zaqbny-awais-madnis-projects.vercel.app',
+      'https://email-assistant-agent-1ama1vlze-awais-madnis-projects.vercel.app'
     ];
 
     // Allow if exact match OR if it's a Vercel preview domain
