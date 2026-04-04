@@ -32,6 +32,13 @@ router.get('/emails', verifyToken, userApiLimiter, gmailController.getEmails);
 router.post('/create-draft', verifyToken, userApiLimiter, gmailController.createDraft);
 
 /**
+ * POST /api/gmail/send-reply
+ * Send a reply email directly
+ * Body: { emailId, content }
+ */
+router.post('/send-reply', verifyToken, userApiLimiter, gmailController.sendReply);
+
+/**
  * DELETE /api/gmail/disconnect
  * Disconnect Gmail account
  */

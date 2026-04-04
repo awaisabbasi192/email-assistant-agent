@@ -33,8 +33,9 @@ class GeminiService {
       // Build prompt
       const { subject, from, body } = emailData;
       const tone = options.tone || 'professional';
+      const customTone = options.customTone || null;
 
-      const prompt = this._buildPrompt(subject, from, body, tone);
+      const prompt = this._buildPrompt(subject, from, body, tone, customTone);
 
       // Call Groq API
       const apiKey = getGroqApiKey();
@@ -210,13 +211,18 @@ Option 3 (Concise):
   /**
    * Build system and user prompt
    */
-  static _buildPrompt(subject, from, body, tone = 'professional') {
+  static _buildPrompt(subject, from, body, tone = 'professional', customTone = null) {
     const toneInstructions = {
       professional: 'Use a formal, professional tone.',
       friendly: 'Use a warm, friendly tone.',
       concise: 'Keep it very brief and to the point (1-2 sentences).',
-      formal: 'Use a very formal, business-like tone.'
+      formal: 'Use a very formal, business-like tone.',
+      custom: customTone || 'Use a professional tone.' // Fallback for custom tone
     };
+
+    const toneInstruction = tone === 'custom' && customTone
+      ? customTone
+      : (toneInstructions[tone] || toneInstructions.professional);
 
     const userPrompt = `Original Email:
 Subject: ${subject}
@@ -224,7 +230,7 @@ From: ${from}
 Body:
 ${body}
 
-${toneInstructions[tone] || toneInstructions.professional}
+${toneInstruction}
 
 Guidelines:
 - Keep replies brief (2-4 sentences for short emails, 3-6 for longer ones)

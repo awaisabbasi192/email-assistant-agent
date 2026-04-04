@@ -183,6 +183,39 @@ export const createDraft = async (req, res) => {
 };
 
 /**
+ * Send reply email directly
+ */
+export const sendReply = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const { emailId, content } = req.body;
+
+    if (!emailId || !content) {
+      return res.status(400).json({ error: 'Missing emailId or content' });
+    }
+
+    const result = await GmailService.sendReply(req.user.userId, emailId, content);
+
+    res.json({
+      message: 'Email sent successfully',
+      messageId: result.id,
+      threadId: result.threadId
+    });
+  } catch (error) {
+    console.error('Send reply error:', error);
+
+    if (error.message.includes('Gmail not connected')) {
+      return res.status(400).json({ error: 'Gmail is not connected' });
+    }
+
+    res.status(500).json({ error: 'Failed to send email' });
+  }
+};
+
+/**
  * Disconnect Gmail
  */
 export const disconnect = async (req, res) => {

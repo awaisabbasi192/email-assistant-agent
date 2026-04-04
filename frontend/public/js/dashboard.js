@@ -4,6 +4,49 @@
 
 let currentEmailData = null;
 let currentUser = null;
+let allEmails = []; // Store all emails for filtering
+let currentCategory = 'all'; // Track active category tab
+let currentSearchTerm = ''; // Track current search term
+
+// Utility: Debounce function for search
+function debounce(func, delay) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+
+// Filter and display emails based on category and search term
+function updateEmailDisplay() {
+  let filteredEmails = [...allEmails];
+
+  // Filter by category
+  if (currentCategory !== 'all') {
+    filteredEmails = filteredEmails.filter(email => {
+      if (currentCategory === 'important') {
+        return email.labelIds && email.labelIds.includes('IMPORTANT');
+      } else if (currentCategory === 'promotions') {
+        return email.category === 'promotions' || (email.labelIds && email.labelIds.includes('CATEGORY_PROMOTIONS'));
+      } else if (currentCategory === 'social') {
+        return email.category === 'social' || (email.labelIds && email.labelIds.includes('CATEGORY_SOCIAL'));
+      }
+      return true;
+    });
+  }
+
+  // Filter by search term
+  if (currentSearchTerm) {
+    filteredEmails = filteredEmails.filter(email => {
+      const senderMatch = email.from.toLowerCase().includes(currentSearchTerm);
+      const subjectMatch = email.subject.toLowerCase().includes(currentSearchTerm);
+      return senderMatch || subjectMatch;
+    });
+  }
+
+  // Display filtered emails
+  displayEmails(filteredEmails);
+}
 
 // Dark mode management
 function initializeDarkMode() {
@@ -213,11 +256,57 @@ function setupEventListeners() {
   document.getElementById('disconnectGmailBtn').addEventListener('click', disconnectGmail);
   document.getElementById('refreshEmailsBtn').addEventListener('click', loadEmails);
 
+  // Email Search and Filter
+  const searchInput = document.getElementById('emailSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', debounce((e) => {
+      currentSearchTerm = e.target.value.trim().toLowerCase();
+      document.getElementById('emailSearchClear').style.display =
+        currentSearchTerm ? 'block' : 'none';
+      updateEmailDisplay();
+    }, 300));
+  }
+
+  const searchClear = document.getElementById('emailSearchClear');
+  if (searchClear) {
+    searchClear.addEventListener('click', () => {
+      document.getElementById('emailSearchInput').value = '';
+      currentSearchTerm = '';
+      searchClear.style.display = 'none';
+      updateEmailDisplay();
+    });
+  }
+
+  // Category Tabs
+  document.querySelectorAll('.category-tab').forEach((tab) => {
+    tab.addEventListener('click', (e) => {
+      document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+      e.target.classList.add('active');
+      currentCategory = e.target.getAttribute('data-category');
+      currentSearchTerm = ''; // Clear search when changing category
+      document.getElementById('emailSearchInput').value = '';
+      document.getElementById('emailSearchClear').style.display = 'none';
+      updateEmailDisplay();
+    });
+  });
+
   // Email Modal
   document.getElementById('closeEmailModal').addEventListener('click', closeEmailModal);
   document.getElementById('closeEmailModalBtn').addEventListener('click', closeEmailModal);
   document.getElementById('generateNewReplyBtn').addEventListener('click', generateReply);
   document.getElementById('saveDraftBtn').addEventListener('click', saveDraft);
+  document.getElementById('sendEmailBtn').addEventListener('click', sendReply);
+
+  // Settings - Tone selector
+  const replyTone = document.getElementById('replyTone');
+  if (replyTone) {
+    replyTone.addEventListener('change', (e) => {
+      const customGroup = document.getElementById('customToneGroup');
+      if (customGroup) {
+        customGroup.style.display = e.target.value === 'custom' ? 'block' : 'none';
+      }
+    });
+  }
 
   // Settings
   document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
@@ -397,6 +486,18 @@ async function loadEmails() {
 
     const emails = await response.json();
 
+    // Store all emails for filtering
+    allEmails = emails;
+    currentCategory = 'all';
+    currentSearchTerm = '';
+
+    // Reset search bar and category tabs
+    document.getElementById('emailSearchInput').value = '';
+    document.getElementById('emailSearchClear').style.display = 'none';
+    document.querySelectorAll('.category-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.getAttribute('data-category') === 'all');
+    });
+
     displayEmails(emails);
   } catch (error) {
     console.error('Error loading emails:', error);
@@ -413,8 +514,16 @@ function displayEmails(emails) {
   const emailList = document.getElementById('emailList');
 
   if (emails.length === 0) {
-    emailList.innerHTML =
-      '<li class="empty-state"><div class="empty-state-icon">✓</div><p>No unread emails!</p></li>';
+    if (currentSearchTerm) {
+      emailList.innerHTML =
+        '<li class="empty-state"><div class="empty-state-icon">🔍</div><p>No emails match your search.</p></li>';
+    } else if (currentCategory !== 'all') {
+      emailList.innerHTML =
+        '<li class="empty-state"><div class="empty-state-icon">📬</div><p>No emails in this category.</p></li>';
+    } else {
+      emailList.innerHTML =
+        '<li class="empty-state"><div class="empty-state-icon">✓</div><p>No unread emails!</p></li>';
+    }
     return;
   }
 
@@ -501,13 +610,19 @@ async function generateReply() {
     document.getElementById('generateNewReplyBtn').disabled = true;
     showLoading('Generating reply...');
 
+    const tone = document.getElementById('replyTone')?.value || 'professional';
+    const customTone = tone === 'custom'
+      ? document.getElementById('customToneInput')?.value
+      : null;
+
     const response = await apiCall('/ai/generate-reply', {
       method: 'POST',
       body: JSON.stringify({
         subject: currentEmailData.subject,
         from: currentEmailData.from,
         body: currentEmailData.body,
-        tone: document.getElementById('replyTone')?.value || 'professional'
+        tone: tone,
+        customTone: customTone
       })
     });
 
@@ -568,13 +683,66 @@ async function saveDraft() {
 }
 
 /**
+ * Send reply email directly
+ */
+async function sendReply() {
+  if (!currentEmailData) return;
+
+  const replyContent = document.getElementById('replyContent').value.trim();
+
+  if (!replyContent) {
+    showError('Reply cannot be empty');
+    return;
+  }
+
+  try {
+    showLoading('Sending email...');
+
+    const response = await apiCall('/gmail/send-reply', {
+      method: 'POST',
+      body: JSON.stringify({
+        emailId: currentEmailData.id,
+        content: replyContent
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to send email');
+    }
+
+    showSuccess('Email sent successfully! ✓');
+    closeEmailModal();
+
+    // Reload emails to update list
+    await loadEmails();
+    hideLoading();
+  } catch (error) {
+    console.error('Error sending email:', error);
+    showError(error.message || 'Failed to send email');
+    hideLoading();
+  }
+}
+
+/**
  * Load user settings
  */
 async function loadSettings() {
   if (currentUser) {
     document.getElementById('autoGenerateReplies').checked =
       currentUser.settings?.autoGenerateReplies || false;
-    document.getElementById('replyTone').value = currentUser.settings?.replyTone || 'professional';
+
+    const replyTone = currentUser.settings?.replyTone || 'professional';
+    document.getElementById('replyTone').value = replyTone;
+
+    const customToneGroup = document.getElementById('customToneGroup');
+    if (customToneGroup) {
+      customToneGroup.style.display = replyTone === 'custom' ? 'block' : 'none';
+    }
+
+    if (replyTone === 'custom' && currentUser.settings?.customTone) {
+      document.getElementById('customToneInput').value = currentUser.settings.customTone;
+    }
   }
 }
 
@@ -583,10 +751,21 @@ async function loadSettings() {
  */
 async function saveSettings() {
   try {
+    const tone = document.getElementById('replyTone').value;
     const settings = {
       autoGenerateReplies: document.getElementById('autoGenerateReplies').checked,
-      replyTone: document.getElementById('replyTone').value
+      replyTone: tone
     };
+
+    // Save custom tone if selected
+    if (tone === 'custom') {
+      const customTone = document.getElementById('customToneInput').value.trim();
+      if (!customTone) {
+        showError('Please enter custom tone instructions');
+        return;
+      }
+      settings.customTone = customTone;
+    }
 
     showLoading('Saving settings...');
 

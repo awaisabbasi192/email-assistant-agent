@@ -10,7 +10,7 @@ export const generateReply = async (req, res) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    const { subject, from, body, tone } = req.body;
+    const { subject, from, body, tone, customTone } = req.body;
 
     // Validate input
     if (!subject || !from || !body) {
@@ -28,7 +28,10 @@ export const generateReply = async (req, res) => {
     // Generate reply
     const reply = await GeminiService.generateReply(
       { subject, from, body },
-      { tone: tone || 'professional' }
+      {
+        tone: tone || 'professional',
+        customTone: customTone || null
+      }
     );
 
     // Log activity

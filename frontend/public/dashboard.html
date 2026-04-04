@@ -104,6 +104,26 @@
             </button>
           </div>
 
+          <!-- Email Category Tabs -->
+          <div class="email-category-tabs">
+            <button class="category-tab active" data-category="all">All</button>
+            <button class="category-tab" data-category="important">Important</button>
+            <button class="category-tab" data-category="promotions">Promotions</button>
+            <button class="category-tab" data-category="social">Social</button>
+          </div>
+
+          <!-- Email Search Bar -->
+          <div class="email-search-bar">
+            <input
+              type="text"
+              id="emailSearchInput"
+              class="email-search-input"
+              placeholder="🔍 Search by sender or subject..."
+              autocomplete="off"
+            >
+            <button class="email-search-clear" id="emailSearchClear" style="display: none;">✕</button>
+          </div>
+
           <ul class="email-list" id="emailList">
             <li class="empty-state">
               <div class="empty-state-icon">📬</div>
@@ -132,7 +152,18 @@
               <option value="friendly">Friendly</option>
               <option value="concise">Concise</option>
               <option value="formal">Formal</option>
+              <option value="custom">Custom</option>
             </select>
+          </div>
+
+          <div class="form-group" id="customToneGroup" style="display: none;">
+            <label for="customToneInput">Custom Tone Instructions</label>
+            <textarea
+              id="customToneInput"
+              class="custom-tone-input"
+              placeholder="E.g., 'Write like a CEO' or 'Very casual and brief' or 'One sentence only'"
+              style="min-height: 80px; resize: vertical;"
+            ></textarea>
           </div>
 
           <button class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>
@@ -171,7 +202,10 @@
 
       <div class="modal-footer">
         <button class="btn btn-secondary" id="closeEmailModalBtn">Close</button>
-        <button class="btn btn-success" id="saveDraftBtn">
+        <button class="btn btn-success" id="sendEmailBtn">
+          📧 Send Now
+        </button>
+        <button class="btn btn-secondary" id="saveDraftBtn">
           💾 Save as Draft
         </button>
       </div>

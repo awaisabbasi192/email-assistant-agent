@@ -324,6 +324,76 @@ class GmailService {
   }
 
   /**
+   * Send a reply email directly
+   */
+  static async sendReply(userId, emailId, replyContent) {
+    try {
+      const tokens = await this.getTokens(userId);
+      const oauth2 = getOAuth2Client();
+
+      oauth2.setCredentials({
+        access_token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+        expiry_date: tokens.expiryDate
+      });
+
+      const gmail = google.gmail({ version: 'v1', auth: oauth2 });
+
+      // Get original email
+      const { data: originalMsg } = await gmail.users.messages.get({
+        userId: 'me',
+        id: emailId,
+        format: 'full'
+      });
+
+      const originalEmail = this._parseEmail(originalMsg);
+
+      // Build reply message
+      const replySubject = originalEmail.subject.startsWith('Re:')
+        ? originalEmail.subject
+        : `Re: ${originalEmail.subject}`;
+
+      // Extract email address from "Name <email@domain.com>" format
+      const toEmail = originalEmail.from.match(/<([^>]+)>/)
+        ? originalEmail.from.match(/<([^>]+)>/)[1]
+        : originalEmail.from.split('<')[0].trim();
+
+      // Create raw message
+      const rawMessage = this._createRawMessage({
+        to: toEmail,
+        subject: replySubject,
+        body: replyContent,
+        inReplyTo: originalEmail.messageId,
+        references: originalEmail.references
+      });
+
+      // Send message
+      const { data: sentMsg } = await gmail.users.messages.send({
+        userId: 'me',
+        requestBody: {
+          message: {
+            raw: Buffer.from(rawMessage).toString('base64')
+          }
+        }
+      });
+
+      // Log activity
+      await LoggingService.logActivity(userId, 'EMAIL_SEND', {
+        emailId,
+        messageId: sentMsg.id,
+        to: toEmail
+      });
+
+      return {
+        id: sentMsg.id,
+        threadId: sentMsg.threadId
+      };
+    } catch (error) {
+      throw new Error(`Failed to send email: ${error.message}`);
+    }
+  }
+
+  /**
    * Disconnect Gmail (revoke tokens)
    */
   static async disconnect(userId) {
@@ -361,6 +431,16 @@ class GmailService {
     const messageId = getHeader('Message-ID') || '';
     const references = getHeader('References') || '';
 
+    // Extract labels and categories
+    const labelIds = message.labelIds || [];
+    const category = labelIds
+      .find(label => label.startsWith('CATEGORY_'))
+      ? labelIds
+          .find(label => label.startsWith('CATEGORY_'))
+          .replace('CATEGORY_', '')
+          .toLowerCase()
+      : 'primary';
+
     // Extract body
     let body = '';
     if (message.payload.body && message.payload.body.data) {
@@ -391,7 +471,9 @@ class GmailService {
       body: body.substring(0, 1000), // Limit to 1000 chars
       snippet: message.snippet || '',
       messageId,
-      references
+      references,
+      labelIds, // Gmail label IDs (includes IMPORTANT, CATEGORY_*, etc.)
+      category // Extracted category name
     };
   }
 
