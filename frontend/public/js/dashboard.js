@@ -5,11 +5,37 @@
 let currentEmailData = null;
 let currentUser = null;
 
+// Dark mode management
+function initializeDarkMode() {
+  const isDarkMode = localStorage.getItem('darkMode') === 'true';
+  if (isDarkMode) {
+    document.body.classList.add('dark-mode');
+    updateDarkModeIcon(true);
+  }
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDarkMode = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDarkMode);
+  updateDarkModeIcon(isDarkMode);
+}
+
+function updateDarkModeIcon(isDark) {
+  const icon = document.querySelector('.dark-mode-icon');
+  if (icon) {
+    icon.textContent = isDark ? '☀️' : '🌙';
+  }
+}
+
 // Initialize dashboard on page load
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     console.log('🔍 Dashboard initializing...');
     console.log('📍 URL:', window.location.href);
+
+    // Initialize dark mode
+    initializeDarkMode();
 
     // Handle OAuth callback - capture token from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
@@ -170,6 +196,9 @@ function updateGmailStatus(isConnected) {
  * Set up event listeners
  */
 function setupEventListeners() {
+  // Dark mode toggle
+  document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+
   // Navigation
   document.querySelectorAll('[data-section]').forEach((link) => {
     link.addEventListener('click', (e) => {
@@ -283,6 +312,65 @@ async function disconnectGmail() {
 }
 
 /**
+ * Calculate email age category
+ */
+function getEmailAgeClass(dateString) {
+  const emailDate = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - emailDate;
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+  if (diffDays < 1) {
+    return 'age-today';
+  } else if (diffDays < 7) {
+    return 'age-week';
+  } else {
+    return 'age-old';
+  }
+}
+
+/**
+ * Generate sender avatar with initials
+ */
+function generateSenderAvatar(fromString) {
+  // Extract name from "Name <email@domain>" format
+  const nameMatch = fromString.match(/^([^<]+)/);
+  const name = nameMatch ? nameMatch[1].trim() : fromString;
+  const initials = name
+    .split(' ')
+    .map(n => n.charAt(0).toUpperCase())
+    .join('')
+    .substring(0, 2);
+  return initials || '?';
+}
+
+/**
+ * Get sender color class (cycling through 5 colors)
+ */
+function getSenderColorClass(fromString, index) {
+  const senderHash = fromString.charCodeAt(0) + fromString.charCodeAt(fromString.length - 1);
+  const colorClass = (senderHash % 5) + 1;
+  return `sender-${colorClass}`;
+}
+
+/**
+ * Generate skeleton loading HTML
+ */
+function generateSkeletonLoading() {
+  const skeletonHTML = `
+    <li class="skeleton-item">
+      <div class="skeleton-avatar"></div>
+      <div class="skeleton-content">
+        <div class="skeleton-line title skeleton"></div>
+        <div class="skeleton-line skeleton"></div>
+        <div class="skeleton-line text skeleton"></div>
+      </div>
+    </li>
+  `;
+  return skeletonHTML;
+}
+
+/**
  * Load emails from Gmail
  */
 async function loadEmails() {
@@ -293,7 +381,13 @@ async function loadEmails() {
       return;
     }
 
-    showLoading('Loading emails...');
+    // Show skeleton loading
+    const emailList = document.getElementById('emailList');
+    let skeletonHTML = '';
+    for (let i = 0; i < 5; i++) {
+      skeletonHTML += generateSkeletonLoading();
+    }
+    emailList.innerHTML = skeletonHTML;
 
     const response = await apiCall('/gmail/emails?maxResults=20');
 
@@ -304,11 +398,11 @@ async function loadEmails() {
     const emails = await response.json();
 
     displayEmails(emails);
-    hideLoading();
   } catch (error) {
     console.error('Error loading emails:', error);
     showError('Failed to load emails');
-    hideLoading();
+    document.getElementById('emailList').innerHTML =
+      '<li class="empty-state"><div class="empty-state-icon">❌</div><p>Failed to load emails. Please try again.</p></li>';
   }
 }
 
@@ -326,9 +420,14 @@ function displayEmails(emails) {
 
   emailList.innerHTML = '';
 
-  emails.forEach((email) => {
+  emails.forEach((email, index) => {
     const emailItem = document.createElement('li');
-    emailItem.className = 'email-item';
+
+    // Add age class for color-coded border
+    const ageClass = getEmailAgeClass(email.date);
+    const colorClass = getSenderColorClass(email.from, index);
+
+    emailItem.className = `email-item ${ageClass} ${colorClass}`;
 
     const displayFrom = email.from
       .replace(/<.*>/, '')
@@ -336,20 +435,24 @@ function displayEmails(emails) {
       .substring(0, 30);
     const displaySubject = truncateText(email.subject, 50);
     const displaySnippet = truncateText(email.snippet || email.body, 100);
+    const senderInitials = generateSenderAvatar(displayFrom);
 
     emailItem.innerHTML = `
-      <div class="email-item-header">
-        <div>
-          <div class="email-from">${escapeHtml(displayFrom)}</div>
-          <div class="email-subject">${escapeHtml(displaySubject)}</div>
+      <div class="email-avatar">${escapeHtml(senderInitials)}</div>
+      <div class="email-content">
+        <div class="email-item-header">
+          <div>
+            <div class="email-from">${escapeHtml(displayFrom)}</div>
+            <div class="email-subject">${escapeHtml(displaySubject)}</div>
+          </div>
+          <div class="email-date">${formatDate(email.date)}</div>
         </div>
-        <div class="email-date">${formatDate(email.date)}</div>
-      </div>
-      <div class="email-snippet">${escapeHtml(displaySnippet)}</div>
-      <div class="email-actions">
-        <button class="btn btn-primary btn-sm" data-email-id="${email.id}">
-          ✨ Generate Reply
-        </button>
+        <div class="email-snippet">${escapeHtml(displaySnippet)}</div>
+        <div class="email-actions">
+          <button class="btn btn-primary btn-sm" data-email-id="${email.id}">
+            ✨ Generate Reply
+          </button>
+        </div>
       </div>
     `;
 

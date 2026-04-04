@@ -2,10 +2,27 @@
    DASHBOARD STYLING
    ======================================== */
 
+:root {
+  --bg-primary: #f5f7fa;
+  --bg-secondary: #ffffff;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
+  --border-light: #e9ecef;
+}
+
+body.dark-mode {
+  --bg-primary: #1a1f2e;
+  --bg-secondary: #2d3748;
+  --text-primary: #e2e8f0;
+  --text-secondary: #a0aec0;
+  --border-light: #4a5568;
+}
+
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
 }
 
 .dashboard-sidebar {
@@ -19,6 +36,11 @@
   bottom: 0;
   overflow-y: auto;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+body.dark-mode .dashboard-sidebar {
+  background-color: #1a1f2e;
 }
 
 .dashboard-content {
@@ -69,13 +91,42 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
-  border-bottom: 2px solid white;
+  border-bottom: 2px solid var(--border-light);
+  transition: border-color 0.3s ease;
+}
+
+.dashboard-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .dashboard-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.btn-dark-mode {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-dark-mode:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .btn-dark-mode:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .dashboard-user-info {
@@ -104,7 +155,7 @@
 }
 
 .stat-card {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -117,16 +168,18 @@
 }
 
 .stat-label {
-  color: #7f8c8d;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   font-weight: 500;
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
 }
 
 .stat-value {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 
 .stat-icon {
@@ -137,12 +190,13 @@
 /* Gmail Connection Card */
 
 .gmail-connection-card {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
   margin-bottom: 2rem;
+  transition: background-color 0.3s ease;
 }
 
 .gmail-status {
@@ -183,10 +237,11 @@
 /* Email List */
 
 .emails-section {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
 }
 
 .emails-header {
@@ -209,17 +264,74 @@
 }
 
 .email-item {
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border-light);
+  border-left: 4px solid #28a745;
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1rem;
   transition: all 0.3s ease;
   cursor: pointer;
+  background-color: var(--bg-secondary);
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
 }
 
 .email-item:hover {
-  border-color: #667eea;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  border-color: var(--border-light);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.2);
+  transform: translateY(-2px);
+}
+
+.email-item.age-old {
+  border-left-color: #dc3545;
+}
+
+.email-item.age-week {
+  border-left-color: #ffc107;
+}
+
+.email-item.age-today {
+  border-left-color: #28a745;
+}
+
+.email-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: white;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.email-item.sender-1 .email-avatar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.email-item.sender-2 .email-avatar {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.email-item.sender-3 .email-avatar {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.email-item.sender-4 .email-avatar {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.email-item.sender-5 .email-avatar {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.email-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .email-item-header {
@@ -227,32 +339,37 @@
   justify-content: space-between;
   align-items: start;
   margin-bottom: 0.5rem;
+  gap: 1rem;
 }
 
 .email-from {
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--text-primary);
   flex: 1;
+  transition: color 0.3s ease;
 }
 
 .email-date {
-  color: #95a5a6;
+  color: var(--text-secondary);
   font-size: 0.85rem;
   white-space: nowrap;
   margin-left: 1rem;
+  transition: color 0.3s ease;
 }
 
 .email-subject {
   font-weight: 600;
-  color: #34495e;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
 }
 
 .email-snippet {
-  color: #7f8c8d;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   line-height: 1.4;
   margin-bottom: 1rem;
+  transition: color 0.3s ease;
 }
 
 .email-actions {
@@ -287,7 +404,7 @@
 }
 
 .modal-content {
-  background-color: white;
+  background-color: var(--bg-secondary);
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -296,6 +413,7 @@
   max-height: 90vh;
   overflow-y: auto;
   animation: slideUp 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
 .modal-header {
@@ -304,11 +422,14 @@
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #f5f7fa;
+  border-bottom: 2px solid var(--border-light);
+  transition: border-color 0.3s ease;
 }
 
 .modal-header h2 {
   margin-bottom: 0;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 
 .modal-close {
@@ -339,22 +460,35 @@
 /* Reply Editor */
 
 .reply-editor {
-  background-color: #f5f7fa;
+  background-color: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
+  transition: background-color 0.3s ease;
+}
+
+body.dark-mode .reply-editor {
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .reply-editor textarea {
   width: 100%;
   min-height: 200px;
   padding: 1rem;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   font-family: var(--font-primary);
   font-size: 1rem;
   resize: vertical;
   margin-bottom: 1rem;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.reply-editor textarea:focus {
+  border-color: #667eea;
+  outline: none;
 }
 
 .reply-actions {
@@ -366,12 +500,73 @@
 .empty-state {
   text-align: center;
   padding: 3rem 1.5rem;
-  color: #95a5a6;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
 }
 
 .empty-state-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
+}
+
+/* Skeleton Loading Animation */
+
+.skeleton {
+  background: linear-gradient(90deg, var(--border-light) 25%, rgba(0, 0, 0, 0.05) 50%, var(--border-light) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-item {
+  border: 1px solid var(--border-light);
+  border-left: 4px solid var(--border-light);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  background-color: var(--bg-secondary);
+}
+
+.skeleton-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, var(--border-light) 25%, rgba(0, 0, 0, 0.05) 50%, var(--border-light) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.skeleton-line {
+  height: 12px;
+  margin-bottom: 0.8rem;
+}
+
+.skeleton-line.title {
+  height: 16px;
+  margin-bottom: 0.5rem;
+  width: 60%;
+}
+
+.skeleton-line.text {
+  height: 12px;
+  width: 85%;
 }
 
 /* Responsive */
