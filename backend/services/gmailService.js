@@ -412,7 +412,7 @@ class GmailService {
       ''
     ];
 
-    return headers.join('\r\n') + body;
+    return headers.join('\r\n') + '\r\n' + body;
   }
 }
 
